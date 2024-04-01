@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, url_for
+from flask import Flask, redirect, request, url_for, render_template
 from urllib.parse import urlencode
 
 from steam_user import SteamUser
@@ -8,7 +8,7 @@ app.debug = True
 
 steam_openid_url = 'https://steamcommunity.com/openid/login'
 
-user: SteamUser
+steam_user: SteamUser
 
 @app.route("/")
 def hello():
@@ -27,7 +27,6 @@ def login_with_steam():
   
     query_string = urlencode(params)
     login_url = steam_openid_url + "?" + query_string
-    print(login_url)
     return redirect(login_url)
 
 @app.route("/user")
@@ -36,15 +35,16 @@ def get_user_id():
     last_slash = identity.rindex('/')
     id_number = identity[last_slash+1:]
     
-    global user
-    user = SteamUser(id_number)
-    return redirect(url_for("list_owned_games", user_id = user.user_id))
+    global steam_user
+    steam_user = SteamUser(id_number)
+    return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
 
 @app.route("/user/<user_id>")
 def list_owned_games(user_id):
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
-        return "Logged in as " + user.user_name
+        global steam_user
+        return render_template("owned_games.html", games = steam_user.user_games)
     except Exception:
         return '<a href="/login">Login with steam</a>'
 
