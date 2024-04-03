@@ -1,4 +1,5 @@
 import requests
+import json
 
 class SteamGame:
     game_id = None
@@ -7,13 +8,20 @@ class SteamGame:
     tags = []
     rating = None
     
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.game_id = id
+        self.game_name = name
+        
         #Steam API only supports icon URL, so we grab the logo URL directly
         self.game_logo_url = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + str(self.game_id) + "/capsule_184x69.jpg"
         
-        resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(self.game_id))
-        json = resp.json()
-        
-        self.game_name = json['name']
-        self.tags = json['tags']
+    def get_tags(self):
+        with open('tags.json') as json_file:
+            tags_json = json.load(json_file)
+            #Some games aren't present in the tag cache; usually means they have no store listing
+            try:
+                self.tags = tags_json[str(self.game_id)]
+            except KeyError:
+                pass
+            
+            print(self.game_id)

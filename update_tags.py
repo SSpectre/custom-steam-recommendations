@@ -8,8 +8,6 @@ game_ids = []
 end_of_pages = False
 page = 0
 
-start_time = time.time()
-
 while end_of_pages == False:
     try:
         all_resp = requests.get("https://steamspy.com/api.php?request=all&page=" + str(page))
@@ -19,16 +17,12 @@ while end_of_pages == False:
         end_of_pages = True
     page = page + 1
 
-for i in range(20):
-    id = game_ids[i]
+for id in game_ids:
     resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + id)
     local_json = resp.json()
     
     tags = local_json['tags']
     game_tag_dict[id] = tags
-    print(id)
 
 with open('tags.json', 'w') as tags_file:
     json.dump(game_tag_dict, tags_file)
-    
-print("Time elapsed: " + str(time.time() - start_time))
