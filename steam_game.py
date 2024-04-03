@@ -1,4 +1,3 @@
-import requests
 import json
 
 class SteamGame:
@@ -18,7 +17,5 @@ class SteamGame:
             self.tags = SteamGame.tag_cache[str(self.game_id)]
         except KeyError:
             pass
-            
-        print(self.game_id)
         
         self.rating = None

@@ -3,8 +3,6 @@ from urllib.parse import urlencode
 
 from steam_user import SteamUser
 
-import json
-
 app = Flask(__name__)
 app.debug = True
 
@@ -49,6 +47,12 @@ def list_owned_games(user_id):
         return render_template("owned_games.html", games = steam_user.user_games)
     except Exception:
         return '<a href="/login">Login with steam</a>'
+    
+@app.route("/dropdown", methods = ['POST'])
+def assign_rating():
+    value = request.form.get("rating")
+    print(value)
+    return render_template("owned_games.html", games = steam_user.user_games)
 
 if __name__ == "__main__":
     app.run()
