@@ -1,13 +1,12 @@
 from flask import Flask, redirect, request, url_for, render_template
-from flask_executor import Executor
 from urllib.parse import urlencode
 
 from steam_user import SteamUser
 
+import json
+
 app = Flask(__name__)
 app.debug = True
-
-executor = Executor(app)
 
 steam_openid_url = 'https://steamcommunity.com/openid/login'
 
@@ -46,11 +45,7 @@ def get_user_id():
 def list_owned_games(user_id):
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
-        global steam_user
-        
-        for game in steam_user.user_games:
-            executor.submit(game.get_tags)
-        
+        global steam_user        
         return render_template("owned_games.html", games = steam_user.user_games)
     except Exception:
         return '<a href="/login">Login with steam</a>'
