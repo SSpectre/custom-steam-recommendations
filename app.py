@@ -43,16 +43,24 @@ def get_user_id():
 def list_owned_games(user_id):
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
-        global steam_user        
-        return render_template("owned_games.html", games = steam_user.user_games)
+        global steam_user
+        games_list = steam_user.user_games.values()
+        return render_template("owned_games.html", games = sorted(games_list, key=lambda game: game.game_name.casefold()))
     except Exception:
         return '<a href="/login">Login with steam</a>'
     
-@app.route("/dropdown", methods = ['POST'])
+@app.route("/assign_rating", methods = ['POST'])
 def assign_rating():
-    value = request.form.get("rating")
-    print(value)
-    return render_template("owned_games.html", games = steam_user.user_games)
+    data = request.get_json()
+    rating = data['rating']
+    
+    global steam_user
+    if rating == "exclude":
+        steam_user.user_games[data['id']].rating = None
+    else:
+        steam_user.user_games[data['id']].rating = data['rating']
+    
+    return "nothing"
 
 if __name__ == "__main__":
     app.run()

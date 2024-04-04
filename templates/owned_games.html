@@ -19,8 +19,8 @@
 						{{game.game_name}}
 					</td>
 					<td>
-						<form method="POST" action="{{ url_for('assign_rating') }}">
-							<select name="rating">
+						<form>
+							<select name="rating" onchange="assignRating({{game.game_id}}, this.value)">
 								<option value="exclude" selected="selected">*Exclude*</option>
 								<option value="1">1</option>
 								<option value="2">2</option>
@@ -33,12 +33,29 @@
 								<option value="9">9</option>
 								<option value="10">10</option>
 							</select>
-							<input type="submit" value="Submit">
 						</form>
 					</td>
 				</tr>
 			{% endfor %}
 			</tbody>
 		</table>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script>
+			function assignRating(gameID, rating) {
+				var data = {
+					id: gameID,
+					rating: rating
+				};
+			
+				$.ajax({
+					type: "POST",
+					url: "/assign_rating",
+					data: JSON.stringify(data),
+					contentType: "application/json",
+					dataType: 'json'
+			    });
+			}
+			</script>
 	</body>
 </html>
