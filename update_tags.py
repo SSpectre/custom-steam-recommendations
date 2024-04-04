@@ -18,11 +18,16 @@ while end_of_pages == False:
     page = page + 1
 
 for id in game_ids:
-    resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + id)
-    local_json = resp.json()
+    try:
+        resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + id)
+        local_json = resp.json()
     
-    tags = local_json['tags']
-    game_tag_dict[id] = tags
+        tags = local_json['tags']
+        game_tag_dict[id] = tags
+    except Exception:
+        pass
+    
+    print(id)
 
 with open('tags.json', 'w') as tags_file:
     json.dump(game_tag_dict, tags_file)
