@@ -6,7 +6,7 @@ from steam_user import SteamUser
 app = Flask(__name__)
 app.debug = True
 
-steam_openid_url = 'https://steamcommunity.com/openid/login'
+STEAM_OPENID_URL = 'https://steamcommunity.com/openid/login'
 
 steam_user: SteamUser
 
@@ -21,12 +21,12 @@ def login_with_steam():
       'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.mode': 'checkid_setup',
-      'openid.return_to': 'http://127.0.0.1:5000/user',
-      'openid.realm': 'http://127.0.0.1:5000'
+      'openid.return_to': 'http://localhost:5000/user',
+      'openid.realm': 'http://localhost:5000'
       }
   
     query_string = urlencode(params)
-    login_url = steam_openid_url + "?" + query_string
+    login_url = STEAM_OPENID_URL + "?" + query_string
     return redirect(login_url)
 
 @app.route("/user")
@@ -37,6 +37,7 @@ def get_user_id():
     
     global steam_user
     steam_user = SteamUser(id_number)
+    
     return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
 
 @app.route("/user/<user_id>")
@@ -49,7 +50,7 @@ def list_owned_games(user_id):
     except Exception:
         return '<a href="/login">Login with steam</a>'
     
-@app.route("/assign_rating", methods = ['POST'])
+@app.route("/assign_rating", methods=['POST'])
 def assign_rating():
     data = request.get_json()
     rating = data['rating']
