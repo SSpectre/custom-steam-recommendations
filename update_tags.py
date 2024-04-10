@@ -2,22 +2,25 @@ import requests
 import json
 import time
 
+from json import JSONDecodeError
+
 game_tag_dict = { }
 game_ids = []
+tag_set = set()
 
 end_of_pages = False
 page = 0
-
-start_time = time.time()
 
 while end_of_pages == False:
     try:
         all_resp = requests.get("https://steamspy.com/api.php?request=all&page=" + str(page))
         all_json = all_resp.json()
-        game_ids.extend(list(all_json.keys()))
-    except Exception:
+    except JSONDecodeError:
         end_of_pages = True
-    page = page + 1
+    else:
+        game_ids.extend(list(all_json.keys()))
+        page += 1
+    
 
 for id in game_ids:
     try:
@@ -26,12 +29,12 @@ for id in game_ids:
     
         tags = local_json['tags'].keys()
         game_tag_dict[id] = list(tags)
+        tag_set = tag_set | set(tags)
     except Exception:
         pass
-    
-    print(id)
 
 with open('tags.json', 'w') as tags_file:
     json.dump(game_tag_dict, tags_file)
     
-print("Time elapsed: " + str(time.time() - start_time))
+with open('tag_set.json', 'w') as set_file:
+    json.dump(list(tag_set), set_file)

@@ -161,3 +161,4 @@ cython_debug/
 
 #Personal Additions
 tags.json
+tag_set.json

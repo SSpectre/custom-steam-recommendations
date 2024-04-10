@@ -2,9 +2,11 @@
 <html lang="en">
 	<head>
 		<title>Owned Games</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	</head>
 	<body>
-		<table id="ownedgames" width="50%">
+		<button type="button" onclick="recommendGames()">Recommend Games</button>
+		<table id="ownedgames">
 			<thead>
 				<tr>
 					<th>Game</th>
@@ -36,7 +38,6 @@
 			</tbody>
 		</table>
 		
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<script>
 			function assignRating(gameID, rating) {
 				var data = {
@@ -51,6 +52,12 @@
 					contentType: "application/json",
 					dataType: 'json'
 			    });
+			}
+
+			function recommendGames() {
+				$.ajax({
+					url: "/recommend_games"
+				});
 			}
 			</script>
 	</body>

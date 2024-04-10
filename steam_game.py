@@ -8,6 +8,7 @@ class SteamGame:
     def __init__(self, id, name):
         self.game_id = id
         self.game_name = name
+        self.tags = []
         
         #Steam API only supports icon URL, so we grab the logo URL directly
         self.game_logo_url = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + str(self.game_id) + "/capsule_184x69.jpg"

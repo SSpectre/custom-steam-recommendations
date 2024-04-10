@@ -73,7 +73,7 @@ def list_owned_games(user_id):
                 add_game_to_db(steam_user.user_id, game.game_id)
         
         return render_template("owned_games.html", games = sorted(games_list, key=lambda game: game.game_name.casefold()))
-    except KeyError:
+    except NameError:
         return '<a href="/login">Login with steam</a>'
     
 @app.route("/assign_rating", methods=['POST'])
@@ -83,6 +83,13 @@ def assign_rating():
     
     global steam_user
     update_rating(rating, steam_user, data['id'])
+    
+    return "nothing"
+
+@app.route("/recommend_games")
+def recommend_games():
+    global steam_user
+    steam_user.calculate_tag_scores()
     
     return "nothing"
 
