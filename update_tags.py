@@ -8,29 +8,21 @@ game_tag_dict = { }
 game_ids = []
 tag_set = set()
 
-end_of_pages = False
-page = 0
-
-while end_of_pages == False:
-    try:
-        all_resp = requests.get("https://steamspy.com/api.php?request=all&page=" + str(page))
-        all_json = all_resp.json()
-    except JSONDecodeError:
-        end_of_pages = True
-    else:
-        game_ids.extend(list(all_json.keys()))
-        page += 1
-    
+all_resp = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
+all_json = all_resp.json()
+for app in all_json["applist"]["apps"]:
+    game_ids.append(app["appid"])
 
 for id in game_ids:
     try:
-        resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + id)
+        resp = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(id))
         local_json = resp.json()
-    
+            
         tags = local_json['tags'].keys()
         game_tag_dict[id] = list(tags)
         tag_set = tag_set | set(tags)
-    except Exception:
+        print(id)
+    except AttributeError:
         pass
 
 with open('tags.json', 'w') as tags_file:
