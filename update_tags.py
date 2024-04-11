@@ -2,8 +2,6 @@ import requests
 import json
 import time
 
-from json import JSONDecodeError
-
 game_tag_dict = { }
 game_ids = []
 tag_set = set()

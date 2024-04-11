@@ -4,6 +4,8 @@ class SteamGame:
     tag_cache = { }
     with open('tags.json') as json_file:
         tag_cache = json.load(json_file)
+        
+    TARGET_TAGS = 20
     
     def __init__(self, id, name):
         self.game_id = id
@@ -20,3 +22,12 @@ class SteamGame:
             pass
         
         self.rating = None
+        self.rec_score = 0
+        
+    def calculate_rec_score(self, tag_scores):
+        for tag in self.tags:
+            self.rec_score += tag_scores[tag]
+            
+        tag_num = len(self.tags)
+        if tag_num < SteamGame.TARGET_TAGS:
+            self.rec_score *= (SteamGame.TARGET_TAGS / tag_num)
