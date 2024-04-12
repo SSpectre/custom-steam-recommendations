@@ -96,37 +96,20 @@ def recommend_games():
     steam_user.calculate_tag_scores()
     
     all_games = []
-    all_resp = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
-    all_json = all_resp.json()
+    all_response = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
+    if all_response.status_code == 200:
+        all_json = all_response.json()
     
+    #confirm that app is a valid game before adding it to list
     for app in all_json["applist"]["apps"]:
-        game = SteamGame(app['appid'], app['name'])
-        if len(game.tags) > 0:
+        if app['appid'] in SteamGame.tag_cache.keys():
+            game = SteamGame(app['appid'], app['name'])
             all_games.append(game)
             
     rec_list = []
-    
     for game in all_games:
         game.calculate_rec_score(steam_user.tag_scores)
-        
-        rec_iter = iter(rec_list)
-
-        for i in range(RECOMMENDATION_LIST_SIZE):
-            try:
-                comparison_game = next(rec_iter)
-            except StopIteration:
-                #reached the end of recommendation list that isn't full
-                rec_list.append(game)
-                break
-            else:
-                if game.rec_score > comparison_game.rec_score:
-                    rec_list.insert(i, game)
-                    
-                    if len(rec_list) > 100:
-                        rec_list.pop()
-                    break
-        
-        rec_iter = iter(rec_list)
+        add_to_rec_list(game, rec_list)
                 
     for rec in rec_list:
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
@@ -167,15 +150,27 @@ def update_rating(rating, user, game_id):
                        [rating if rating != "exclude" else "NULL", user.user_id, game_id])
     connection.commit()
     
-""" def is_app_game(id):
-    detail_resp = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(id))
-    detail_json = detail_resp.json()
+def add_to_rec_list(game, rec_list):
+    rec_iter = iter(rec_list)
+
+    #can't iterate over list directly since it might be empty
+    for i in range(RECOMMENDATION_LIST_SIZE):
+        try:
+            comparison_game = next(rec_iter)
+        except StopIteration:
+            #reached the end of recommendation list that isn't full
+            rec_list.append(game)
+            break
+        else:
+            if game.rec_score > comparison_game.rec_score:
+                rec_list.insert(i, game)
+                
+                #limit recommendation list size
+                if len(rec_list) > RECOMMENDATION_LIST_SIZE:
+                    rec_list.pop()
+                break
     
-    try:
-        return detail_json[str(id)]['data']['type'] == "game"
-    except KeyError:
-        print(id)
-        return False """
+    rec_iter = iter(rec_list)
 
 if __name__ == "__main__":
     app.run()

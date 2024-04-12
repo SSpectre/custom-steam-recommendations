@@ -1,6 +1,7 @@
 import json
 
 class SteamGame:
+    """Stores information relating to a single Steam game and provides access to the tag cache."""
     tag_cache = { }
     with open('tags.json') as json_file:
         tag_cache = json.load(json_file)
@@ -25,6 +26,7 @@ class SteamGame:
         self.rec_score = 0
         
     def calculate_rec_score(self, tag_scores):
+        """Calculates the game's recommendation score based on its tags and the user's tag scores"""
         for tag in self.tags:
             self.rec_score += tag_scores[tag]
             
