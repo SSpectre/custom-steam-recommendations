@@ -162,3 +162,5 @@ cython_debug/
 #Personal Additions
 tags.json
 tag_set.json
+
+secret_keys.py
