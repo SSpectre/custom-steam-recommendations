@@ -32,4 +32,5 @@ class SteamGame:
             
         tag_num = len(self.tags)
         if tag_num < SteamGame.TARGET_TAGS:
-            self.rec_score *= (SteamGame.TARGET_TAGS / tag_num)
+            confidence = tag_num / ((SteamGame.TARGET_TAGS - 1) * 2) + 0.4737
+            self.rec_score *= (SteamGame.TARGET_TAGS / tag_num * confidence)

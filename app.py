@@ -102,7 +102,7 @@ def recommend_games():
     
     #confirm that app is a valid game before adding it to list
     for app in all_json["applist"]["apps"]:
-        if app['appid'] in SteamGame.tag_cache.keys():
+        if str(app['appid']) in SteamGame.tag_cache.keys():
             game = SteamGame(app['appid'], app['name'])
             all_games.append(game)
             

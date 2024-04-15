@@ -59,6 +59,36 @@ class SteamUser:
                 score_sum += self.tag_scores[tag]
                 number_of_scores += 1
                 
+        score_avg = self.apply_average_score_to_unknown_tags(score_sum, number_of_scores, scores)
+                
+        #reset sum, since average will need to be re-calculated
+        score_sum = 0
+        
+        #calculate a confidence value for each tag score based on number of ratings, adjust tag scores
+        for tag in scores:
+            ratings = len(scores[tag])
+            if ratings > 0:
+                current_score = self.tag_scores[tag]
+                
+                #fraction exponent of a negative base isn't defined, so we use the absolute value of the base and multiply it by its sign to get the intended equation
+                base = ratings - 1.7
+                sign = base / abs(base)
+                real_exp = sign * abs(base) ** 2.6
+                confidence = -2.5 / (real_exp + 5.4) + 1
+                
+                #adjust low-confidence tag score up if it's below average and down if it's above average
+                deviation = current_score - score_avg
+                self.tag_scores[tag] = round(current_score - deviation * confidence, 4)
+                score_sum += self.tag_scores[tag]
+                
+        #re-calculate and apply the average tag score using confidence-adjusted values
+        self.apply_average_score_to_unknown_tags(score_sum, number_of_scores, scores)
+        
+        print(sorted(self.tag_scores.items(), key=lambda tag: tag[1]))
+        
+    def apply_average_score_to_unknown_tags(self, score_sum, number_of_scores, scores):
+        """Calculate the average of existing scores and apply it to tags with no representation.
+        Returns the average score."""
         #calculate the average tag score
         score_avg = round(score_sum / number_of_scores, 4)
         
@@ -66,3 +96,5 @@ class SteamUser:
         for tag in scores:
             if len(scores[tag]) == 0:
                 self.tag_scores[tag] = score_avg
+                
+        return score_avg

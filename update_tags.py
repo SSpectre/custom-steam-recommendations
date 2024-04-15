@@ -20,6 +20,8 @@ def query_limited_api(url, id):
         response = requests.get(url + str(id))
         if response.status_code == 200:
             result = response.json()
+        else:
+            print("Response: " + str(response.status_code))
             
         if result is not None:
             break
