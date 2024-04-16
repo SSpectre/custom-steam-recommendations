@@ -1,6 +1,6 @@
 import requests
 
-from flask import Flask, redirect, request, url_for, render_template, g
+from flask import Flask, redirect, request, url_for, render_template
 from urllib.parse import urlencode
 from multipledispatch import dispatch
 
@@ -111,10 +111,13 @@ def recommend_games():
         game.calculate_rec_score(steam_user.tag_scores)
         add_to_rec_list(game, rec_list)
                 
+    json_list = map(lambda rec:rec.toJson(), rec_list)
     for rec in rec_list:
-        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
-    
-    return "nothing"
+        #print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+        #json_list.append(rec.toJson())
+        pass
+
+    return json_list
 
 @dispatch(str)
 def does_record_exist(user_id):

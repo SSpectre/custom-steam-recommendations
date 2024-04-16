@@ -15,6 +15,7 @@ class SteamGame:
         
         #Steam API only supports icon URL, so we grab the logo URL directly
         self.game_logo_url = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + str(self.game_id) + "/capsule_184x69.jpg"
+        self.store_url = "https://store.steampowered.com/app/" + str(self.game_id)
         
         #Some games aren't present in the tag cache; usually means they have no store listing
         try:
@@ -24,6 +25,9 @@ class SteamGame:
         
         self.rating = None
         self.rec_score = 0
+
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
         
     def calculate_rec_score(self, tag_scores):
         """Calculates the game's recommendation score based on its tags and the user's tag scores"""
@@ -34,3 +38,5 @@ class SteamGame:
         if tag_num < SteamGame.TARGET_TAGS:
             confidence = tag_num / ((SteamGame.TARGET_TAGS - 1) * 2) + 0.4737
             self.rec_score *= (SteamGame.TARGET_TAGS / tag_num * confidence)
+
+        self.rec_score = round(self.rec_score, 4)
