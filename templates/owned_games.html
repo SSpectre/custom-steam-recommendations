@@ -32,9 +32,7 @@
 					{% for game in games %}
 						<tr>
 							<td>
-								<a href={{game.store_url}}>
-									<img src = {{game.game_logo_url}}>
-								</a>
+								<a href={{game.store_url}}><img src = {{game.game_logo_url}}></a>
 								{{game.game_name}}
 							</td>
 							<td>
@@ -96,12 +94,16 @@
 			}
 
 			function recommendGames() {
+				for (let i = 0; i < 100; i++) {
+					$("#rec" + (i+1)).html("Calculating...");
+				}
+
 				$.ajax({
 					type: "GET",
 					url: "/recommend_games",
 					success: function(response) {
 						for (let i = 0; i < 100; i++) {
-							let game = JSON.parse(response[i])
+							let game = JSON.parse(response[i]);
 							let innerHTML = "<a href=" + game.store_url + "><img src = " + game.game_logo_url + ">" + "</a>" + game.game_name;
 							$("#rec" + (i+1)).html(innerHTML);
 						}

@@ -111,11 +111,9 @@ def recommend_games():
         game.calculate_rec_score(steam_user.tag_scores)
         add_to_rec_list(game, rec_list)
                 
-    json_list = map(lambda rec:rec.toJson(), rec_list)
-    for rec in rec_list:
-        #print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
-        #json_list.append(rec.toJson())
-        pass
+    json_list = [rec.toJson() for rec in rec_list]
+    """ for rec in rec_list:
+        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score)) """
 
     return json_list
 
