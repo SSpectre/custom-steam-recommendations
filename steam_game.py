@@ -26,7 +26,7 @@ class SteamGame:
         self.rating = None
         self.rec_score = 0
 
-    def toJson(self):
+    def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
         
     def calculate_rec_score(self, tag_scores):

@@ -1,16 +1,20 @@
 import requests
 
-from flask import Flask, redirect, request, url_for, render_template
+from flask import Flask, redirect, request, url_for, render_template, make_response
+from flask_cors import CORS
 from urllib.parse import urlencode
 from multipledispatch import dispatch
 
+import db
+
 from steam_user import SteamUser
 from steam_game import SteamGame
-from db import get_db, query_db, close_db
 
 app = Flask(__name__)
 app.debug = True
-app.teardown_appcontext(close_db)
+app.teardown_appcontext(db.close_db)
+
+cors = CORS(app)
 
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
@@ -19,8 +23,8 @@ RECOMMENDATION_LIST_SIZE = 100
 steam_user: SteamUser
 
 @app.route("/")
-def hello():
-    return '<a href="/login">Login with steam</a>'
+def begin():
+    return render_template("login.html")
 
 @app.route("/login")
 def login_with_steam():
@@ -35,6 +39,7 @@ def login_with_steam():
   
     query_string = urlencode(params)
     login_url = STEAM_OPENID_URL + "?" + query_string
+    
     return redirect(login_url)
 
 @app.route("/user")
@@ -50,35 +55,37 @@ def get_user_id():
 
 @app.route("/user/<user_id>")
 def list_owned_games(user_id):
+    global steam_user
+    
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
-        global steam_user
         games_list = steam_user.user_games.values()
-        user_exists = does_record_exist(steam_user.user_id)
-        
-        if user_exists:
-            #existing user; add new games to db and retrieve stored ratings
-            for game in games_list:
-                game_exists = does_record_exist(steam_user.user_id, game.game_id)
-                
-                if game_exists:
-                    rating = query_db("""SELECT rating
-                                        FROM """ + USER_GAMES_TABLE +
-                                        """ WHERE user_id = ?
-                                        AND game_id = ?""",
-                                        [steam_user.user_id, game.game_id], True)['rating']
-                    game.rating = rating if rating != "NULL" else None
-                else:
-                    add_game_to_db(steam_user.user_id, game.game_id)
-                
-        else:
-            #new user; add all their games to db with no scores
-            for game in games_list:
-                add_game_to_db(steam_user.user_id, game.game_id)
-        
-        return render_template("owned_games.html", games = sorted(games_list, key=lambda game: game.game_name.casefold()))
     except NameError:
-        return '<a href="/login">Login with steam</a>'
+        return redirect(url_for("begin"))
+    user_exists = does_record_exist(steam_user.user_id)
+    
+    if user_exists:
+        #existing user; add new games to db and retrieve stored ratings
+        for game in games_list:
+            game_exists = does_record_exist(steam_user.user_id, game.game_id)
+            
+            if game_exists:
+                rating = db.query_db("""SELECT rating
+                                    FROM """ + USER_GAMES_TABLE +
+                                    """ WHERE user_id = ?
+                                    AND game_id = ?""",
+                                    [steam_user.user_id, game.game_id], True)['rating']
+                game.rating = rating if rating != "NULL" else None
+            else:
+                add_game_to_db(steam_user.user_id, game.game_id)
+            
+    else:
+        #new user; add all their games to db with no scores
+        for game in games_list:
+            add_game_to_db(steam_user.user_id, game.game_id)
+    
+    return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()))
+    
     
 @app.route("/assign_rating", methods=['POST'])
 def assign_rating():
@@ -88,38 +95,45 @@ def assign_rating():
     global steam_user
     update_rating(rating, steam_user, data['id'])
     
-    return "nothing"
+    return "{}"
 
 @app.route("/recommend_games")
 def recommend_games():
     global steam_user
     steam_user.calculate_tag_scores()
     
-    all_games = []
     all_response = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
-    if all_response.status_code == 200:
-        all_json = all_response.json()
+    all_json = all_response.json()
     
-    #confirm that app is a valid game before adding it to list
-    for app in all_json["applist"]["apps"]:
-        if str(app['appid']) in SteamGame.tag_cache.keys():
-            game = SteamGame(app['appid'], app['name'])
-            all_games.append(game)
-            
+    all_apps = {}
+    for app in all_json['applist']['apps']:
+        all_apps[str(app['appid'])] = app['name']
+        
+    app_set = set(all_apps.keys())
+    
+    cache_list = list(SteamGame.tag_cache.keys())
+    cache_set = set(cache_list)
+    
+    #cache_set filters out non-games, app_set filters out games that are no longer available for sale
+    valid_ids = cache_set.intersection(app_set)
+    valid_games = [SteamGame(id, all_apps[id]) for id in valid_ids]
+           
+    #construct recommendation list 
     rec_list = []
-    for game in all_games:
+    for game in valid_games:
         game.calculate_rec_score(steam_user.tag_scores)
         add_to_rec_list(game, rec_list)
                 
-    json_list = [rec.toJson() for rec in rec_list]
-    """ for rec in rec_list:
-        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score)) """
+    #send recommendation list to HTML template as JSON
+    json_list = [rec.to_json() for rec in rec_list]
+    for rec in rec_list:
+        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
 
     return json_list
 
 @dispatch(str)
 def does_record_exist(user_id):
-    result = query_db("""SELECT COUNT(1)
+    result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       " WHERE user_id = ?",
                       [user_id], True)['COUNT(1)']
@@ -127,7 +141,7 @@ def does_record_exist(user_id):
 
 @dispatch(str, int)
 def does_record_exist(user_id, game_id):
-    result = query_db("""SELECT COUNT(1)
+    result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       """ WHERE user_id = ?
                       AND game_id = ?""",
@@ -135,15 +149,15 @@ def does_record_exist(user_id, game_id):
     return result
 
 def add_game_to_db(user_id, game_id):
-    connection = get_db()
+    connection = db.get_db()
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?)",
                        [user_id, game_id, "NULL"])
     connection.commit()
 
 def update_rating(rating, user, game_id):
-    user.user_games[game_id].rating = rating if rating != "exclude" else None
-    connection = get_db()
+    user.user_games[game_id].rating = int(rating) if rating != "exclude" else None
+    connection = db.get_db()
     connection.execute("UPDATE " + USER_GAMES_TABLE +
                        """ SET rating = ?
                        WHERE user_id = ?
