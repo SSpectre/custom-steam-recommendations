@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Owned Games</title>
+		<title>Custom Steam Recommendations - {{user_name}}</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="{{url_for('static', filename='scripts/owned_games.js')}}"></script>
 		<style>
 			.column {
 				float: left;
@@ -17,7 +18,9 @@
 		</style>
 	</head>
 	<body>
+		<p>Logged in as {{user_name}}</p>
 		<button type="button" onclick="recommendGames()">Recommend Games</button>
+		<button type="button" onclick="window.location.href = '{{url_for('begin')}}'">Log Out</button>
 		<div class="row">
 			<div class="column">
 				<h1>Current Library:</h1>
@@ -32,7 +35,7 @@
 					{% for game in games %}
 						<tr>
 							<td>
-								<a href={{game.store_url}}><img src = {{game.game_logo_url}}></a>
+								<a href={{game.store_url}}><img src={{game.game_logo_url}} alt={{game.game_name}}></a>
 								{{game.game_name}}
 							</td>
 							<td>
@@ -76,40 +79,6 @@
 			</div>
 		</div>
 		<button type="button" onclick="recommendGames()">Recommend Games</button>
-		
-		<script>
-			function assignRating(gameID, rating) {
-				var data = {
-					id: gameID,
-					rating: rating
-				};
-			
-				$.ajax({
-					type: "POST",
-					url: "/assign_rating",
-					data: JSON.stringify(data),
-					contentType: "application/json",
-					dataType: 'json'
-			    });
-			}
-
-			function recommendGames() {
-				for (let i = 0; i < 100; i++) {
-					$("#rec" + (i+1)).html("Calculating...");
-				}
-
-				$.ajax({
-					type: "GET",
-					url: "/recommend_games",
-					success: function(response) {
-						for (let i = 0; i < 100; i++) {
-							let game = JSON.parse(response[i]);
-							let innerHTML = "<a href=" + game.store_url + "><img src = " + game.game_logo_url + ">" + "</a>" + game.game_name;
-							$("#rec" + (i+1)).html(innerHTML);
-						}
-					},
-				});
-			}
-			</script>
+		<button type="button" onclick="window.location.href = '{{url_for('begin')}}'">Log Out</button>
 	</body>
 </html>
