@@ -163,6 +163,10 @@ cython_debug/
 tags.json
 tag_set.json
 
+api_test.py
+app_difference.json
+game_difference.json
+
 secret_keys.py
 
 .vscode/
