@@ -11,18 +11,49 @@ app_ids = []
 game_tag_dict = { }
 tag_set = set()
 
+#for determining overall time taken by the script
+start_time = time.time()
+#for determining how long to wait when encountering 429 responses
+query_start_time = time.time()
+
+end_of_pages = False
+page = 0
+
 def query_limited_api(url, id, threshold):
     """Function to be used when repeatedly querying an API with a request limit.
     Will wait and continue querying once limit has reset"""
     result = None
     retry_counter = 0
     
+    def should_retry(tries, wait_time):
+        nonlocal retry_counter
+        if retry_counter < tries:
+            retry_counter += 1
+            time.sleep(wait_time)
+            return True
+        else:
+            return False
+    
     #do-while loop
     while True:
-        response = requests.get(url + str(id))
+        try:
+            print("Requesting " + url, end = "")
+            response = requests.get(url + str(id), timeout = 60)
+            print("...Success")
+        except requests.Timeout:
+            #don't need to sleep since already waited for timeout
+            if should_retry(5, 0): continue
+            else: break
+        except Exception:
+            if should_retry(5, 60): continue
+            else: break
         
         if response.status_code == 200:
-            result = response.json()
+            try:
+                result = response.json()
+            except json.JSONDecodeError:
+                if should_retry(5, 0): continue
+                else: break
         elif response.status_code == 429:
             print("Waiting...")
             global query_start_time
@@ -42,30 +73,21 @@ def query_limited_api(url, id, threshold):
         else:
             #for unexpected errors, try 5 times, then treat the id as invalid
             print("Response: " + str(response.status_code))
-            if retry_counter < 5:
-                retry_counter += 1
-                continue
-            else:
-                break
+            if should_retry(5, 60): continue
+            else: break
             
         if result is not None:
             break
         
     return result
-    
-#for determining overall time taken by the script
-start_time = time.time()
-end_of_pages = False
-page = 0
 
 #Steam Spy API retrieves all IDs separated into pages, so we need to add them to a single list
 while end_of_pages == False:
     try:
-        all_resp = requests.get("https://steamspy.com/api.php?request=all&page=" + str(page))
-        all_json = all_resp.json()
-        app_ids.extend(list(all_json.keys()))
         print("Page: " + str(page + 1))
-    except json.JSONDecodeError:
+        all_json = query_limited_api("https://steamspy.com/api.php?request=all&page=", page, 60)
+        app_ids.extend(list(all_json.keys()))
+    except AttributeError:
         end_of_pages = True
     page = page + 1
     
@@ -73,8 +95,6 @@ while end_of_pages == False:
 id_set = set(app_ids)
 
 request_number = 0
-#for determining how long to wait when encountering 429 responses
-query_start_time = time.time()
 
 for id in id_set:
     request_number += 1
