@@ -16,25 +16,26 @@ app.teardown_appcontext(db.close_db)
 
 cors = CORS(app)
 
+URL_ROOT = "/custom-steam-recommendations/"
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
 RECOMMENDATION_LIST_SIZE = 100
 
 steam_user: SteamUser
 
-@app.route("/")
+@app.route(URL_ROOT)
 def begin():
     return render_template("login.html")
 
-@app.route("/login")
+@app.route(URL_ROOT + "login/")
 def login_with_steam():
     params = {
       'openid.ns': "http://specs.openid.net/auth/2.0",
       'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.mode': 'checkid_setup',
-      'openid.return_to': 'http://localhost:5000/user',
-      'openid.realm': 'http://localhost:5000'
+      'openid.return_to': request.url_root + url_for("get_user_id"),
+      'openid.realm': request.url_root
       }
   
     query_string = urlencode(params)
@@ -42,7 +43,7 @@ def login_with_steam():
     
     return redirect(login_url)
 
-@app.route("/user")
+@app.route(URL_ROOT + "user/")
 def get_user_id():
     identity = request.args["openid.identity"]
     last_slash = identity.rindex('/')
@@ -53,7 +54,7 @@ def get_user_id():
     
     return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
 
-@app.route("/user/<user_id>")
+@app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
     global steam_user
     
@@ -87,7 +88,7 @@ def list_owned_games(user_id):
     return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()))
     
     
-@app.route("/assign_rating", methods=['POST'])
+@app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
     data = request.get_json()
     rating = data['rating']
@@ -97,7 +98,7 @@ def assign_rating():
     
     return "{}"
 
-@app.route("/recommend_games")
+@app.route(URL_ROOT + "recommend_games")
 def recommend_games():
     global steam_user
     steam_user.calculate_tag_scores()

@@ -6,12 +6,12 @@ function assignRating(gameID, rating) {
 
     $.ajax({
         type: "POST",
-        url: "/assign_rating",
+        url: $('body').data('assignrating'),
         data: JSON.stringify(data),
         contentType: "application/json",
         dataType: 'json',
         error: function() {
-            alert("Please log in again.")
+            alert("Something went wrong. Please try logging in again or try again later.");
         }
     });
 }
@@ -23,7 +23,7 @@ function recommendGames() {
     
     $.ajax({
         type: "GET",
-        url: "/recommend_games",
+        url: $('body').data('recommendgames'),
         success: function(response) {
             for (let i = 0; i < 100; i++) {
                 let game = JSON.parse(response[i]);
@@ -40,7 +40,7 @@ function recommendGames() {
                 $("#rec" + (i+1)).html("");
             }
 
-            alert("Please log in again.")
+            alert("Something went wrong. Please try logging in again or try again later.");
         },
     });
 }

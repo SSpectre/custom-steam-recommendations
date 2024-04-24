@@ -17,7 +17,7 @@
 			}
 		</style>
 	</head>
-	<body>
+	<body data-assignrating="{{url_for('assign_rating')}}" data-recommendgames="{{url_for('recommend_games')}}">
 		<p>Logged in as {{user_name}}</p>
 		<button type="button" onclick="recommendGames()">Recommend Games</button>
 		<button type="button" onclick="window.location.href = '{{url_for('begin')}}'">Log Out</button>

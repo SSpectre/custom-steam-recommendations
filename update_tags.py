@@ -26,6 +26,8 @@ def query_limited_api(url, id, threshold):
     retry_counter = 0
     
     def should_retry(tries, wait_time):
+        """Inner function to be used when encountering exceptions from GET requests.
+        Controls number of times a retry should be attempted before giving up and how long to wait between retries"""
         nonlocal retry_counter
         if retry_counter < tries:
             retry_counter += 1
