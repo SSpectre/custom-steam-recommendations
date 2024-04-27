@@ -3,6 +3,7 @@
 	<head>
 		<title>Custom Steam Recommendations - {{user_name}}</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="{{url_for('static', filename='scripts/restrict_to_iframe.js')}}"></script>
 		<script src="{{url_for('static', filename='scripts/owned_games.js')}}"></script>
 		<style>
 			.column {
@@ -17,10 +18,10 @@
 			}
 		</style>
 	</head>
-	<body data-assignrating="{{url_for('assign_rating')}}" data-recommendgames="{{url_for('recommend_games')}}">
+	<body onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-recommendgames="{{url_for('recommend_games')}}">
 		<p>Logged in as {{user_name}}</p>
 		<button type="button" onclick="recommendGames()">Recommend Games</button>
-		<button type="button" onclick="window.location.href = '{{url_for('begin')}}'">Log Out</button>
+		<button type="button" onclick="window.location.href = '{{url_for('logout')}}'">Log Out</button>
 		<div class="row">
 			<div class="column">
 				<h1>Current Library:</h1>

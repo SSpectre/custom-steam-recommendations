@@ -1,4 +1,5 @@
 import requests
+import json
 
 from flask import Flask, redirect, request, url_for, render_template, make_response
 from flask_cors import CORS
@@ -34,7 +35,7 @@ def login_with_steam():
       'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
       'openid.mode': 'checkid_setup',
-      'openid.return_to': request.url_root + url_for("get_user_id"),
+      'openid.return_to': request.url_root + url_for("authenticate"),
       'openid.realm': request.url_root
       }
   
@@ -43,8 +44,8 @@ def login_with_steam():
     
     return redirect(login_url)
 
-@app.route(URL_ROOT + "user/")
-def get_user_id():
+@app.route(URL_ROOT + "authenticate/")
+def authenticate():
     identity = request.args["openid.identity"]
     last_slash = identity.rindex('/')
     id_number = identity[last_slash+1:]
@@ -52,7 +53,16 @@ def get_user_id():
     global steam_user
     steam_user = SteamUser(id_number)
     
-    return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
+    return "<script> close() </script>"
+
+@app.route(URL_ROOT + "user/")
+def get_user_id():
+    global steam_user
+    
+    try:
+        return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
+    except NameError:
+        return redirect(url_for("begin"))
 
 @app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
@@ -87,6 +97,13 @@ def list_owned_games(user_id):
     
     return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()))
     
+@app.route(URL_ROOT + "confirm/")
+def confirm_login():
+    global steam_user
+    try:
+        return json.dumps({"user_id": steam_user.user_id})
+    except (NameError, AttributeError):
+        return {}
     
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
@@ -131,6 +148,13 @@ def recommend_games():
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
 
     return json_list
+
+@app.route(URL_ROOT + "logout/")
+def logout():
+    global steam_user
+    steam_user = None
+    
+    return redirect(url_for("begin"))
 
 @dispatch(str)
 def does_record_exist(user_id):
