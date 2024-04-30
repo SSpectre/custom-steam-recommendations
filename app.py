@@ -1,8 +1,9 @@
 import requests
 import json
 
-from flask import Flask, redirect, request, url_for, render_template, make_response
+from flask import Flask, redirect, request, url_for, render_template, session
 from flask_cors import CORS
+from flask_session import Session
 from urllib.parse import urlencode
 from multipledispatch import dispatch
 
@@ -12,8 +13,12 @@ from steam_user import SteamUser
 from steam_game import SteamGame
 
 app = Flask(__name__)
-app.debug = True
 app.teardown_appcontext(db.close_db)
+
+SESSION_PERMANENT = False
+SESSION_TYPE = "filesystem"
+app.config.from_object(__name__)
+Session(app)
 
 cors = CORS(app)
 
@@ -22,10 +27,9 @@ STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
 RECOMMENDATION_LIST_SIZE = 100
 
-steam_user: SteamUser
-
 @app.route(URL_ROOT)
 def begin():
+    session.permanent = False
     return render_template("login.html")
 
 @app.route(URL_ROOT + "login/")
@@ -50,28 +54,24 @@ def authenticate():
     last_slash = identity.rindex('/')
     id_number = identity[last_slash+1:]
     
-    global steam_user
-    steam_user = SteamUser(id_number)
+    session["steam_user"] = SteamUser(id_number)
     
     return "<script> close() </script>"
 
 @app.route(URL_ROOT + "user/")
 def get_user_id():
-    global steam_user
-    
     try:
-        return redirect(url_for("list_owned_games", user_id = steam_user.user_id))
-    except NameError:
+        return redirect(url_for("list_owned_games", user_id = session["steam_user"].user_id))
+    except (KeyError, AttributeError):
         return redirect(url_for("begin"))
 
 @app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
-    global steam_user
-    
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
+        steam_user = session["steam_user"]
         games_list = steam_user.user_games.values()
-    except (NameError, AttributeError):
+    except (KeyError, AttributeError):
         return redirect(url_for("begin"))
     user_exists = does_record_exist(steam_user.user_id)
     
@@ -99,25 +99,22 @@ def list_owned_games(user_id):
     
 @app.route(URL_ROOT + "confirm/")
 def confirm_login():
-    global steam_user
     try:
-        return json.dumps({"user_id": steam_user.user_id})
-    except (NameError, AttributeError):
+        return json.dumps({"user_id": session["steam_user"].user_id})
+    except (KeyError, AttributeError):
         return {}
     
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
     data = request.get_json()
     rating = data['rating']
-    
-    global steam_user
-    update_rating(rating, steam_user, data['id'])
+    update_rating(rating, session["steam_user"], data['id'])
     
     return "{}"
 
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
-    global steam_user
+    steam_user = session["steam_user"]
     steam_user.calculate_tag_scores()
     
     all_response = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
@@ -151,9 +148,7 @@ def recommend_games():
 
 @app.route(URL_ROOT + "logout/")
 def logout():
-    global steam_user
-    steam_user = None
-    
+    session["steam_user"] = None
     return redirect(url_for("begin"))
 
 @dispatch(str)

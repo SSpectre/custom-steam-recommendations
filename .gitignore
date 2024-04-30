@@ -172,3 +172,4 @@ secret_keys.py
 run-flask.sh
 
 .vscode/
+flask_session/

@@ -6,7 +6,9 @@
 		<script src="{{url_for('static', filename='scripts/restrict_to_iframe.js')}}"></script>
     </head>
     <body onpageshow="restrictToIframe()">
-        <a href="{{url_for('login_with_steam')}}" target="_blank"><img src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam"></a>
+        <a href="#" onclick='window.open("{{ url_for('login_with_steam') }}"); return false;'>
+            <img src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam">
+        </a>
         
         <script>
             $(window).on("focus", function() {
