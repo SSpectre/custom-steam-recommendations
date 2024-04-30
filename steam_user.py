@@ -78,7 +78,7 @@ class SteamUser:
                 
                 #adjust low-confidence tag score up if it's below average and down if it's above average
                 deviation = current_score - score_avg
-                self.tag_scores[tag] = round(current_score - deviation * confidence, 4)
+                self.tag_scores[tag] = round(current_score - deviation * (1 - confidence), 4)
                 score_sum += self.tag_scores[tag]
                 
         #re-calculate and apply the average tag score using confidence-adjusted values

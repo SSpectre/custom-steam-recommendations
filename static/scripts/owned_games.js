@@ -31,7 +31,7 @@ function recommendGames() {
                 let url = game.store_url;
                 let logo = game.game_logo_url;
                 let name = game.game_name;
-                let innerHTML = `<a href=${url}><img src=${logo} alt=${name}></a>${name}`;
+                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt=${name}></a>${name}`;
                 $("#rec" + (i+1)).html(innerHTML);
             }
         },

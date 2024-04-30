@@ -71,7 +71,7 @@ def list_owned_games(user_id):
     #if user tries to bypass login by directly entering Steam id, exception is thrown
     try:
         games_list = steam_user.user_games.values()
-    except NameError:
+    except (NameError, AttributeError):
         return redirect(url_for("begin"))
     user_exists = does_record_exist(steam_user.user_id)
     
