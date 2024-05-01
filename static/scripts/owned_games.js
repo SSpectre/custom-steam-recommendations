@@ -16,8 +16,8 @@ function assignRating(gameID, rating) {
     });
 }
 
-function recommendGames() {
-    for (let i = 0; i < 100; i++) {
+function recommendGames(list_size) {
+    for (let i = 0; i < list_size; i++) {
         $("#rec" + (i+1)).html("Calculating...");
     }
     
@@ -25,22 +25,31 @@ function recommendGames() {
         type: "GET",
         url: $('body').data('recommendgames'),
         success: function(response) {
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < list_size; i++) {
                 let game = JSON.parse(response[i]);
 
                 let url = game.store_url;
                 let logo = game.game_logo_url;
                 let name = game.game_name;
-                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt=${name}></a>${name}`;
+
+                let finalLoad = i == list_size - 1 ? ` onload='loadComplete()'` : ``;
+
+                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt=${name}` + finalLoad + `></a>${name}`;
                 $("#rec" + (i+1)).html(innerHTML);
             }
         },
         error: function() {
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < list_size; i++) {
                 $("#rec" + (i+1)).html("");
             }
 
             alert("Something went wrong. Please try logging in again or try again later.");
         },
+    });
+}
+
+function loadComplete() {
+    parent.postMessage({
+        type: "recommendGames"
     });
 }

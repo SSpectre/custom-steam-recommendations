@@ -25,7 +25,7 @@ cors = CORS(app)
 URL_ROOT = "/custom-steam-recommendations/"
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
-RECOMMENDATION_LIST_SIZE = 100
+RECOMMENDATION_LIST_SIZE = 500
 
 @app.route(URL_ROOT)
 def begin():
@@ -95,7 +95,8 @@ def list_owned_games(user_id):
         for game in games_list:
             add_game_to_db(steam_user.user_id, game.game_id)
     
-    return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()))
+    return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()),
+                           list_size = RECOMMENDATION_LIST_SIZE)
     
 @app.route(URL_ROOT + "confirm/")
 def confirm_login():

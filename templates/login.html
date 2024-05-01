@@ -11,7 +11,7 @@
         </a>
         
         <script>
-            $(window).on("focus", function() {
+            function confirmLogin() {
                 $.ajax({
                     type: "GET",
                     url: "{{url_for('confirm_login')}}",
@@ -21,9 +21,10 @@
                         }
                     },
                 });
+            }
 
-                
-            });
+            $(window).on("focus", confirmLogin);
+            $(parent).on("focus", confirmLogin);
         </script>
     </body>
 </html>
