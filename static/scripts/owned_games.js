@@ -62,6 +62,6 @@ function recommendGames(list_size) {
 
 function loadComplete() {
     parent.postMessage({
-        type: "recommendGames"
+        type: "resizeFrame"
     });
 }
