@@ -36,7 +36,9 @@
 					{% for game in games %}
 						<tr>
 							<td>
-								<a href="#" onclick='window.open("{{game.store_url}}");return false;'><img src={{game.game_logo_url}} alt={{game.game_name}}></a>
+								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
+									<img src={{game.game_logo_url}} alt="{{game.game_name}}">
+								</a>
 								{{game.game_name}}
 							</td>
 							<td>

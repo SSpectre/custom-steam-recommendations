@@ -44,7 +44,7 @@ function recommendGames(list_size) {
 
                 let finalLoad = i == list_size - 1 ? ` onload='loadComplete()'` : ``;
 
-                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt=${name}` + finalLoad + `></a>${name}`;
+                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt="${name}"` + finalLoad + `></a>${name}`;
                 $("#rec" + (i+1)).html(innerHTML);
 
                 clearInterval(eInterval);
