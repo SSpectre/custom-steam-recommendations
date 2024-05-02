@@ -6,9 +6,11 @@
 		<script src="{{url_for('static', filename='scripts/restrict_to_iframe.js')}}"></script>
     </head>
     <body onpageshow="restrictToIframe()">
-        <a href="#" onclick='window.open("{{ url_for('login_with_steam') }}"); return false;'>
-            <img src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam">
-        </a>
+        <div id="center-content" style="text-align:center">
+            <a id ="login_button" href="#" onclick='window.open("{{ url_for('login_with_steam') }}"); return false;'>
+                <img src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam">
+            </a>
+        </div>
         
         <script>
             function confirmLogin() {
@@ -16,7 +18,23 @@
                     type: "GET",
                     url: "{{url_for('confirm_login')}}",
                     success: function(response) {
+                        //confirm_login returns empty json if error was encountered
                         if (response.length > 0) {
+                            $("#login_button").hide();
+                            $("#center-content").empty();
+                            $("#center-content").append(`<h1>Loading<span id="ellipsis"></span></h1>`);
+                            $("#center-content").append(`<h2>(This might take a minute if it's your first time or you have a large Steam library)</h2>`);
+
+                            var innerHTML = "";
+                            var eInterval = setInterval(function() {
+                                if (innerHTML.length > 3)
+                                    innerHTML = "";
+                                else
+                                    innerHTML += ".";
+
+                                $("#ellipsis").html(innerHTML);
+                            }, 333);
+
                             window.location = "{{url_for('get_user_id')}}";
                         }
                     },

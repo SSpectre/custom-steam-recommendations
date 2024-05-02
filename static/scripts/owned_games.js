@@ -18,8 +18,18 @@ function assignRating(gameID, rating) {
 
 function recommendGames(list_size) {
     for (let i = 0; i < list_size; i++) {
-        $("#rec" + (i+1)).html("Calculating...");
+        $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }
+
+    var innerHTML = "";
+    var eInterval = setInterval(function() {
+        if (innerHTML.length > 3)
+            innerHTML = "";
+        else
+            innerHTML += ".";
+
+        $(".ellipsis").html(innerHTML);
+    }, 333);
     
     $.ajax({
         type: "GET",
@@ -36,6 +46,8 @@ function recommendGames(list_size) {
 
                 let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt=${name}` + finalLoad + `></a>${name}`;
                 $("#rec" + (i+1)).html(innerHTML);
+
+                clearInterval(eInterval);
             }
         },
         error: function() {
