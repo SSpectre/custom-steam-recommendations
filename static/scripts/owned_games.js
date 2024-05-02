@@ -17,6 +17,8 @@ function assignRating(gameID, rating) {
 }
 
 function recommendGames(list_size) {
+    parent.window.scrollTo(0,0);
+
     for (let i = 0; i < list_size; i++) {
         $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }

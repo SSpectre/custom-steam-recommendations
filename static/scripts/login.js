@@ -1,7 +1,7 @@
 function confirmLogin() {
     $.ajax({
         type: "GET",
-        url: "{{url_for('confirm_login')}}",
+        url: $('body').data('confirmlogin'),
         success: function(response) {
             //confirm_login returns empty json if error was encountered
             if (response.length > 0) {
@@ -24,7 +24,7 @@ function confirmLogin() {
                     $("#ellipsis").html(innerHTML);
                 }, 333);
 
-                window.location = "{{url_for('get_user_id')}}";
+                window.location = $('body').data('getuserid');
             }
         },
     });
