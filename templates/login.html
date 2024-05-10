@@ -5,6 +5,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<script src="{{url_for('static', filename='scripts/restrict_to_iframe.js')}}"></script>
         <script src="{{url_for('static', filename='scripts/login.js')}}"></script>
+        <link rel="stylesheet" href="{{url_for('static', filename='stylesheets/iml-style.css')}}">
     </head>
     <body onpageshow="restrictToIframe()" data-confirmlogin="{{url_for('confirm_login')}}" data-getuserid="{{url_for('get_user_id')}}">
         <div id="center-content" style="text-align:center">
