@@ -16,7 +16,7 @@ def get_db():
     """Connects to database. Returns Connection object."""
     db = getattr(g, "_database", None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE_FILE)
+        db = g._database = sqlite3.connect(DATABASE_FILE, timeout=30.0)
     
     #treat database rows as dictionaries
     db.row_factory = sqlite3.Row

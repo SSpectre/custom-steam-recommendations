@@ -46,7 +46,15 @@ function recommendGames(list_size) {
 
                 let finalLoad = i == list_size - 1 ? ` onload='loadComplete()'` : ``;
 
-                let innerHTML = `<a href="#" onclick='window.open("${url}");return false;'><img src=${logo} alt="${name}"` + finalLoad + `></a>${name}`;
+                let innerHTML =
+                `<a href="#" onclick='window.open("${url}");return false;'>
+                    <figure>
+                        <img src=${logo} alt="${name}"` + finalLoad + `>
+                        <figcaption>
+                            ${name}
+                        </figcaption>
+                    </figure>
+                </a>`;
                 $("#rec" + (i+1)).html(innerHTML);
 
                 clearInterval(eInterval);
@@ -60,6 +68,23 @@ function recommendGames(list_size) {
             alert("Something went wrong. Please try logging in again or try again later.");
         },
     });
+}
+
+function clearRatings() {
+    let i = 0;
+    while (true) {
+        id = "#rating" + i;
+        rating = $(id);
+
+        if (rating.length) {
+            rating.val("exclude");
+            rating.change();
+        }
+        else {
+            break;
+        }
+        i++;
+    }
 }
 
 function loadComplete() {

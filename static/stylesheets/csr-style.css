@@ -1,0 +1,133 @@
+.row {
+    white-space: nowrap;
+    margin-bottom: 1.5em;
+}
+
+.column {
+    display: inline-block;
+    width: 50%;
+    min-width: 228px;
+}
+
+.align-right {
+    float: right;
+}
+
+p {
+    text-align: right;
+}
+
+button,
+p,
+h1 {
+    margin-inline: 10px;
+}
+
+button.inner {
+    margin: 0;
+}
+
+h1 {
+    font-size: 36px;
+}
+
+h2 {
+    font-size: 30px;
+}
+
+table {
+    table-layout: auto;
+    width: 100%;
+}
+
+table .absorbing-column {
+    width: 100%;
+}
+
+tbody tr {
+    height: 57px;
+}
+
+th,
+td {
+    letter-spacing: 1px;
+    font-size: 24px;
+}
+
+th {
+    font-weight: 700;
+    padding: 5px 10px;
+}
+
+td {
+    padding: 5px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+#recommendations td:nth-child(1),
+#ownedgames td:nth-child(2) {
+    text-align: center;
+}
+
+figure {
+    overflow: auto;
+    display: flex;
+    margin: 0;
+}
+
+figure img {
+    float: left;
+    margin: auto 0.5em auto 0;
+    max-width: 120px;
+    max-height: 45px;
+}
+
+figcaption {
+    margin: auto 0;
+}
+
+a,
+a:visited {
+    color: #212121;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+select {
+    font-size: 24px;
+}
+
+@media (max-width: 900px) {
+    h1 {
+        font-size: 30px;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    th,
+    td,
+    select {
+        font-size: 18px;
+    }
+}
+
+@media (max-width:767px) {
+    h1 {
+        font-size: 26px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    th,
+    td,
+    select {
+        letter-spacing: 0;
+    }
+}

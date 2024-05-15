@@ -64,7 +64,7 @@ iframe
 }
 
 body {
-    background: #eceff1
+    background: #ffffff;
 }
 
 body,
@@ -73,7 +73,7 @@ input,
 select,
 textarea {
     color: #424242;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 400;
     font-family: 'Source Sans Pro', 'helvetica neue', helvetica, arial, verdana
 }
@@ -87,8 +87,9 @@ h6 {
     clear: both;
     color: #212121;
     font-family: Lato, sans-serif, 'helvetica neue', helvetica, arial, verdana;
-    font-weight: 900;
-    font-style: normal
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 2px;
 }
 
 blockquote,
@@ -103,6 +104,7 @@ p {
     margin-bottom: 1.5em;
     line-height: 1.7em;
     font-size: 15px;
+    color: #212121;
 }
 
 li
@@ -159,20 +161,20 @@ table caption {
 }
 
 thead {
-    background-color: #fff;
+    background-color: #ddd;
     color: #212121
 }
 
 table,
 td,
 th {
-    border: 1px solid #ddd
+    border: 1px solid #ccc
 }
 
 td,
 th {
     padding: .7em;
-    text-align: left
+    text-align: left;
 }
 
 tbody tr:nth-child(odd) {
@@ -183,7 +185,6 @@ button,
 input,
 select,
 textarea {
-    font-size: 100%;
     margin: 0;
     max-width: 100%;
     vertical-align: baseline
@@ -204,7 +205,7 @@ textarea {
 
 input,
 textarea {
-    color: #727272;
+    color: #424242;
     border: 1px solid #aaa1a8
 }
 
@@ -218,6 +219,7 @@ input[type=submit],
 input[type=submit]:hover {
     border: 1px solid #444;
     border-radius: 2px;
+    cursor: pointer;
 }
 
 button,
@@ -235,23 +237,6 @@ input[type=submit]:hover:enabled
 {
     background-color: #913b00;
 	color: #ccc;
-}
-
-button:active,
-button:focus,
-html input[type=button]:active,
-html input[type=button]:focus,
-input[type=reset]:active,
-input[type=reset]:focus,
-input[type=submit]:active,
-input[type=submit]:focus {
-    border: 1px solid #455A64;
-    border-radius: 2px;
-    background: -moz-linear-gradient(#607d8b, #455a64);
-    background: -o-linear-gradient(#607d8b, #455a64);
-    background: -webkit-linear-gradient(#607d8b, #455a64);
-    background: linear-gradient(#607d8b, #455a64);
-    color: #fff
 }
 
 button:focus
@@ -272,7 +257,7 @@ input[type=text],
 input[type=text]:focus,
 textarea,
 textarea:focus {
-    color: #727272
+    color: #424242;
 }
 
 input[type=search].search-field {
@@ -323,22 +308,10 @@ img {
         margin-left: .3em
     }
 
-    table {
-        -ms-word-break: break-all;
-        word-break: break-all
-    }
-
     iframe,
     input,
     textarea {
         width: 100%
-    }
-
-    td,
-    th {
-        padding: .2em;
-        text-align: left;
-        border: 1px solid #B6B6B6
     }
 }
 
