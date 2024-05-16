@@ -25,7 +25,7 @@ cors = CORS(app)
 URL_ROOT = "/custom-steam-recommendations/"
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
-RECOMMENDATION_LIST_SIZE = 500
+DEFAULT_LIST_SIZE = 100
 
 @app.route(URL_ROOT)
 def begin():
@@ -55,6 +55,7 @@ def authenticate():
     id_number = identity[last_slash+1:]
     
     session["steam_user"] = SteamUser(id_number)
+    session["list_size"] = DEFAULT_LIST_SIZE
     
     return "<script> close() </script>"
 
@@ -73,12 +74,12 @@ def list_owned_games(user_id):
         games_list = steam_user.user_games.values()
     except (KeyError, AttributeError):
         return redirect(url_for("begin"))
-    user_exists = does_record_exist(steam_user.user_id)
+    user_exists = does_user_record_exist()
     
     if user_exists:
         #existing user; add new games to db and retrieve stored ratings
         for game in games_list:
-            game_exists = does_record_exist(steam_user.user_id, game.game_id)
+            game_exists = does_game_record_exist(game.game_id)
             
             if game_exists:
                 rating = db.query_db("""SELECT rating
@@ -88,15 +89,15 @@ def list_owned_games(user_id):
                                     [steam_user.user_id, game.game_id], True)['rating']
                 game.rating = rating if rating != "NULL" else None
             else:
-                add_game_to_db(steam_user.user_id, game.game_id)
+                add_game_to_db(game.game_id)
             
     else:
         #new user; add all their games to db with no scores
         for game in games_list:
-            add_game_to_db(steam_user.user_id, game.game_id)
+            add_game_to_db(game.game_id)
     
     return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()),
-                           list_size = RECOMMENDATION_LIST_SIZE)
+                           list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE)
     
 @app.route(URL_ROOT + "confirm/")
 def confirm_login():
@@ -112,6 +113,17 @@ def assign_rating():
     update_rating(rating, session["steam_user"], data['id'])
     
     return "{}"
+
+@app.route(URL_ROOT + "change_list_size", methods=['POST'])
+def change_list_size():
+    data = request.get_json()
+    old_size = session["list_size"]
+    session["list_size"] = int(data['size'])
+    
+    response = {}
+    response["old_size"] = old_size
+    
+    return response
 
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
@@ -147,33 +159,41 @@ def recommend_games():
 
     return json_list
 
+@app.route(URL_ROOT + "delete_user")
+def delete_user():
+    connection = db.get_db()
+    connection.execute("DELETE FROM " + USER_GAMES_TABLE +
+                       " WHERE user_id = ?",
+                       [session["steam_user"].user_id])
+    connection.commit()
+    
+    return "{}"
+
 @app.route(URL_ROOT + "logout/")
 def logout():
     session["steam_user"] = None
     return redirect(url_for("begin"))
 
-@dispatch(str)
-def does_record_exist(user_id):
+def does_user_record_exist():
     result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       " WHERE user_id = ?",
-                      [user_id], True)['COUNT(1)']
+                      [session["steam_user"].user_id], True)['COUNT(1)']
     return result
 
-@dispatch(str, int)
-def does_record_exist(user_id, game_id):
+def does_game_record_exist(game_id):
     result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       """ WHERE user_id = ?
                       AND game_id = ?""",
-                      [user_id, game_id], True)['COUNT(1)']
+                      [session["steam_user"].user_id, game_id], True)['COUNT(1)']
     return result
 
-def add_game_to_db(user_id, game_id):
+def add_game_to_db(game_id):
     connection = db.get_db()
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?)",
-                       [user_id, game_id, "NULL"])
+                       [session["steam_user"].user_id, game_id, "NULL"])
     connection.commit()
 
 def update_rating(rating, user, game_id):
@@ -190,7 +210,7 @@ def add_to_rec_list(game, rec_list):
     rec_iter = iter(rec_list)
 
     #can't iterate over list directly since it might be empty
-    for i in range(RECOMMENDATION_LIST_SIZE):
+    for i in range(session["list_size"]):
         try:
             comparison_game = next(rec_iter)
         except StopIteration:
@@ -202,7 +222,7 @@ def add_to_rec_list(game, rec_list):
                 rec_list.insert(i, game)
                 
                 #limit recommendation list size
-                if len(rec_list) > RECOMMENDATION_LIST_SIZE:
+                if len(rec_list) > session["list_size"]:
                     rec_list.pop()
                 break
     

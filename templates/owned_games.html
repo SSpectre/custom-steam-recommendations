@@ -9,12 +9,20 @@
 		<link rel="stylesheet" href="{{url_for('static', filename='stylesheets/csr-style.css')}}">
 		<link rel="stylesheet" media="print" onload="this.onload=null;this.media='all';" id="ao_optimized_gfonts" href="https://fonts.googleapis.com/css?family=Ubuntu%7CUbuntu%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic&#038;subset=greek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic%2Cgreek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic&amp;display=swap">
 	</head>
-	<body id="csr-body" onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-recommendgames="{{url_for('recommend_games')}}">
+	<body id="csr-body" onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-changelistsize="{{url_for('change_list_size')}}"
+		data-recommendgames="{{url_for('recommend_games')}}" data-deleteuser="{{url_for('delete_user')}}" data-logout="{{url_for('logout')}}">
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
-			<button type="button" onclick="recommendGames({{list_size}})">Recommend Games</button>
+			<button type="button" class="rec-button" onclick="recommendGames({{list_size}})">Recommend Games</button>
+			<label for="rec-number">Recommendations:</label>
+			<select name="rec-number" id="rec-number" onchange="changeListSize(this.value)">
+				<option value="10" {% if list_size == 10 %} selected {% endif %}>10</option>
+				<option value="50" {% if list_size == 50 %} selected {% endif %}>50</option>
+				<option value="100" {% if list_size == 100 %} selected {% endif %}>100</option>
+				<option value="500" {% if list_size == 500 %} selected {% endif %}>500</option>
+			</select>
 			<button type="button" class="align-right" onclick="window.location.href = '{{url_for('logout')}}'">Log Out</button>
-			<button type="button" class="align-right inner"">Delete User Data</button>
+			<button type="button" class="align-right inner" onclick="deleteUser()">Delete User Data</button>
 			<button type="button" class="align-right inner" onclick="clearRatings()">Clear Ratings</button>
 		</div>
 		<div class="row">
@@ -67,7 +75,7 @@
 							<th class = "absorbing-column">Game</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody id="rec-body">
 						{% for i in range(list_size) %}
 							{% set index = i + 1 %}
 							{% set id = "rec" ~ index %}

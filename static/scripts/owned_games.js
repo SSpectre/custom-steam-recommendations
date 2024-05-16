@@ -1,3 +1,7 @@
+function errorMessage() {
+    alert("Something went wrong. Please try logging in again or try again later.");
+}
+
 function assignRating(gameID, rating) {
     var data = {
         id: gameID,
@@ -11,7 +15,48 @@ function assignRating(gameID, rating) {
         contentType: "application/json",
         dataType: 'json',
         error: function() {
-            alert("Something went wrong. Please try logging in again or try again later.");
+            errorMessage();
+        }
+    });
+}
+
+function changeListSize(size) {
+    var data = {
+        size: size
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('changelistsize'),
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        dataType: 'json',
+        success: function(response) {
+            let oldSize = JSON.parse(response["old_size"]);
+            $(".rec-button").attr("onclick", "recommendGames('" + size + "')");
+
+            let innerHTML = "";
+            for (let i = 0; i < size; i++) {
+                let index = i + 1;
+                let id = "rec" + index;
+                let existingValue = $("#" + id).html();
+
+                let row =
+                `<tr>
+                    <td>` + index +`.</td>
+                    <td id="` + id + `">` + existingValue + `</td>
+                </tr>`;
+                innerHTML = innerHTML + row;
+            }
+
+            $("#rec-body").html(innerHTML);
+
+            if (oldSize < size) {
+                recommendGames(size);
+            }
+        },
+        error: function() {
+            errorMessage();
         }
     });
 }
@@ -65,7 +110,7 @@ function recommendGames(list_size) {
                 $("#rec" + (i+1)).html("");
             }
 
-            alert("Something went wrong. Please try logging in again or try again later.");
+            errorMessage();
         },
     });
 }
@@ -85,6 +130,19 @@ function clearRatings() {
         }
         i++;
     }
+}
+
+function deleteUser() {
+    $.ajax({
+        type: "GET",
+        url: $('body').data('deleteuser'),
+        success: function() {
+            window.location = $('body').data('logout');
+        },
+        error: function() {
+            errorMessage();
+        },
+    });
 }
 
 function loadComplete() {
