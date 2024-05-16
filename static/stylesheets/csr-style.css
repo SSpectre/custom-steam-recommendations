@@ -35,6 +35,10 @@ h2 {
     font-size: 30px;
 }
 
+h3 {
+    letter-spacing: 0;
+}
+
 table {
     table-layout: auto;
     width: 100%;

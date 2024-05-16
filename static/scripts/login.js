@@ -7,8 +7,8 @@ function confirmLogin() {
             if (response.length > 0) {
                 $("#login_button").hide();
                 $("#center-content").empty();
-                $("#center-content").append(`<h1>Loading<span id="ellipsis"></span></h1>`);
-                $("#center-content").append(`<h2>(This might take a minute if it's your first time or you have a large Steam library)</h2>`);
+                $("#center-content").append(`<h2>Loading<span id="ellipsis"></span></h2>`);
+                $("#center-content").append(`<h3>(This might take a minute if it's your first time or you have a large Steam library)</h3>`);
 
                 parent.postMessage({
                     type: "resizeFrame"
