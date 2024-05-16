@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 from multipledispatch import dispatch
 
 import db
+import secret_keys
 
 from steam_user import SteamUser
 from steam_game import SteamGame
@@ -129,13 +130,20 @@ def change_list_size():
 def recommend_games():
     steam_user = session["steam_user"]
     steam_user.calculate_tag_scores()
-    
-    all_response = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
+
+    all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&max_results=50000")
     all_json = all_response.json()
     
     all_apps = {}
-    for app in all_json['applist']['apps']:
+    for app in all_json['response']['apps']:
         all_apps[str(app['appid'])] = app['name']
+
+    while "have_more_results" in all_json['response']:
+        all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&last_appid=" + str(all_json['response']['last_appid']) + "&max_results=50000")
+        all_json = all_response.json()
+        
+        for app in all_json['response']['apps']:
+            all_apps[str(app['appid'])] = app['name']
         
     app_set = set(all_apps.keys())
     
@@ -145,7 +153,7 @@ def recommend_games():
     #cache_set filters out non-games, app_set filters out games that are no longer available for sale
     valid_ids = cache_set.intersection(app_set)
     valid_games = [SteamGame(id, all_apps[id]) for id in valid_ids]
-           
+    
     #construct recommendation list 
     rec_list = []
     for game in valid_games:
