@@ -11,8 +11,8 @@
     </head>
     <body onpageshow="restrictToIframe()" data-confirmlogin="{{url_for('confirm_login')}}" data-getuserid="{{url_for('get_user_id')}}">
         <div id="center-content" style="text-align:center">
-            <a id ="login_button" href="#" onclick='window.open("{{ url_for('login_with_steam') }}"); return false;'>
-                <img src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam">
+            <a id="login-button" href="#" onclick='window.open("{{ url_for('login_with_steam') }}"); return false;'>
+                <img id="login-image" src="{{url_for('static', filename='images/sits_large_border.png')}}" alt="Login with Steam">
             </a>
         </div>
         

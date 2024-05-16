@@ -5,7 +5,7 @@ function confirmLogin() {
         success: function(response) {
             //confirm_login returns empty json if error was encountered
             if (response.length > 0) {
-                $("#login_button").hide();
+                $("#login-button").hide();
                 $("#center-content").empty();
                 $("#center-content").append(`<h2>Loading<span id="ellipsis"></span></h2>`);
                 $("#center-content").append(`<h3>(This might take a minute if it's your first time or you have a large Steam library)</h3>`);

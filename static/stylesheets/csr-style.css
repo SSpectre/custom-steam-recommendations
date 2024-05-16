@@ -1,3 +1,7 @@
+#login-image:hover {
+    opacity: 0.85
+}
+
 .row {
     white-space: nowrap;
     margin-bottom: 1.5em;
