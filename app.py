@@ -152,8 +152,13 @@ def recommend_games():
     
     #cache_set filters out non-games, app_set filters out games that are no longer available for sale
     valid_ids = cache_set.intersection(app_set)
-    valid_games = [SteamGame(id, all_apps[id]) for id in valid_ids]
     
+    #filter out already owned games
+    owned_set = set(str(key) for key in steam_user.user_games.keys())
+    unowned_games = valid_ids.difference(owned_set)
+
+    valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
+
     #construct recommendation list 
     rec_list = []
     for game in valid_games:
