@@ -15,7 +15,7 @@
 		<div id="csr-buttons">
 			<button type="button" class="rec-button" onclick="recommendGames({{list_size}})">Recommend Games</button>
 			<label for="rec-number">Recommendations:</label>
-			<select name="rec-number" id="rec-number" onchange="changeListSize(this.value)">
+			<select name="rec-number" class="rec-number" onchange="changeListSize(this.value)">
 				<option value="10" {% if list_size == 10 %} selected {% endif %}>10</option>
 				<option value="50" {% if list_size == 50 %} selected {% endif %}>50</option>
 				<option value="100" {% if list_size == 100 %} selected {% endif %}>100</option>

@@ -54,6 +54,9 @@ function changeListSize(size) {
             if (oldSize < size) {
                 recommendGames(size);
             }
+
+            $(".rec-number").val(size);
+            loadComplete();
         },
         error: function() {
             errorMessage();
