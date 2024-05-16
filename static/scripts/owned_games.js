@@ -149,7 +149,11 @@ function deleteUser() {
 }
 
 function loadComplete() {
-    parent.postMessage({
-        type: "resizeFrame"
-    });
+    //add a delay because otherwise the resize occurs before everything is in place
+    setTimeout(function() {
+        parent.postMessage({
+            type: "resizeFrame"
+        });
+    }, 100)
+    
 }
