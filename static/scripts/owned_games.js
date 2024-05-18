@@ -1,7 +1,12 @@
+/** General, all-purpose error message. */
 function errorMessage() {
     alert("Something went wrong. Please try logging in again or try again later.");
 }
 
+/** Sends an HTTP request to the server to update a game's rating in the database.
+ * @param {number} gameID - The game's Steam app ID.
+ * @param {string} rating - User's rating, either a number or "exclude".
+ */
 function assignRating(gameID, rating) {
     var data = {
         id: gameID,
@@ -20,6 +25,9 @@ function assignRating(gameID, rating) {
     });
 }
 
+/** Sends an HTTP request to the server to change the number of recommendations. Redraws the list if successful.
+ * @param {string} size - The new number of recommendations.
+ */
 function changeListSize(size) {
     var data = {
         size: size
@@ -35,6 +43,7 @@ function changeListSize(size) {
             let oldSize = JSON.parse(response["old_size"]);
             $(".rec-button").attr("onclick", "recommendGames('" + size + "')");
 
+            //redraw recommendation list, keeping existing recommendations
             let innerHTML = "";
             for (let i = 0; i < size; i++) {
                 let index = i + 1;
@@ -51,11 +60,15 @@ function changeListSize(size) {
 
             $("#rec-body").html(innerHTML);
 
+            //don't need to recalculate recommendations if the list is smaller
             if (oldSize < size) {
                 recommendGames(size);
             }
 
+            //have all instances of the recommendation number dropdown reflect the new size
             $(".rec-number").val(size);
+
+            //tell parent container to resize the iframe. Needs to be placed here in case the list is smaller and recommendGames() isn't called
             loadComplete();
         },
         error: function() {
@@ -64,9 +77,14 @@ function changeListSize(size) {
     });
 }
 
+/** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
+ * @param {number} list_size - Number of games to recommend.
+ */
 function recommendGames(list_size) {
+    //scrolls to top of page, since that's where recommendations appear.
     parent.window.scrollTo(0,0);
 
+    //loading animation
     for (let i = 0; i < list_size; i++) {
         $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }
@@ -92,8 +110,10 @@ function recommendGames(list_size) {
                 let logo = game.game_logo_url;
                 let name = game.game_name;
 
+                //add onload event to last image in the list to notify parent container to resize iframe
                 let finalLoad = i == list_size - 1 ? ` onload='loadComplete()'` : ``;
 
+                //draw recommendation
                 let innerHTML =
                 `<a href="#" onclick='window.open("${url}");return false;'>
                     <figure>
@@ -105,10 +125,12 @@ function recommendGames(list_size) {
                 </a>`;
                 $("#rec" + (i+1)).html(innerHTML);
 
+                //stop loading animation
                 clearInterval(eInterval);
             }
         },
         error: function() {
+            //clear loading animation
             for (let i = 0; i < list_size; i++) {
                 $("#rec" + (i+1)).html("");
             }
@@ -118,6 +140,7 @@ function recommendGames(list_size) {
     });
 }
 
+/** Sets all ratings for the user to N/A */
 function clearRatings() {
     let i = 0;
     while (true) {
@@ -126,15 +149,18 @@ function clearRatings() {
 
         if (rating.length) {
             rating.val("exclude");
+            //trigger onchange event for each dropdown
             rating.change();
         }
         else {
+            //reached the end of user's library
             break;
         }
         i++;
     }
 }
 
+/** Sends an HTTP request to the server to delete the user's data. Logs out if successful. */
 function deleteUser() {
     $.ajax({
         type: "GET",
@@ -148,6 +174,7 @@ function deleteUser() {
     });
 }
 
+/** Tells the parent container to resize the containing iframe. To be called when all elements are loaded. */
 function loadComplete() {
     //add a delay because otherwise the resize occurs before everything is in place
     setTimeout(function() {

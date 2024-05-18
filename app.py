@@ -30,11 +30,13 @@ DEFAULT_LIST_SIZE = 100
 
 @app.route(URL_ROOT)
 def begin():
+    """"Entry point for the Flask application. Displays login page."""
     session.permanent = False
     return render_template("login.html")
 
 @app.route(URL_ROOT + "login/")
 def login_with_steam():
+    """Sends an OpenID request to Steam. Needs to be called from a new tab/window to work from within an iframe."""
     params = {
       'openid.ns': "http://specs.openid.net/auth/2.0",
       'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
@@ -51,6 +53,7 @@ def login_with_steam():
 
 @app.route(URL_ROOT + "authenticate/")
 def authenticate():
+    """Creates Steam User as a session variable and closes the new tab/window created during the login attempt."""
     identity = request.args["openid.identity"]
     last_slash = identity.rindex('/')
     id_number = identity[last_slash+1:]
@@ -69,7 +72,8 @@ def get_user_id():
 
 @app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
-    #if user tries to bypass login by directly entering Steam id, exception is thrown
+    """Creates user's library and displays main page."""
+    #if user tries to bypass login by directly entering Steam id, display login screen
     try:
         steam_user = session["steam_user"]
         games_list = steam_user.user_games.values()
@@ -117,6 +121,7 @@ def assign_rating():
 
 @app.route(URL_ROOT + "change_list_size", methods=['POST'])
 def change_list_size():
+    """Changes the number of recommendations based on an HTTP request from the client. Returns the old size so the client knows whether to shrink or expand."""
     data = request.get_json()
     old_size = session["list_size"]
     session["list_size"] = int(data['size'])
@@ -128,6 +133,7 @@ def change_list_size():
 
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
+    """Constructs the recommendation list."""
     steam_user = session["steam_user"]
     steam_user.calculate_tag_scores()
 
@@ -138,6 +144,7 @@ def recommend_games():
     for app in all_json['response']['apps']:
         all_apps[str(app['appid'])] = app['name']
 
+    #API call only returns max 50000 results but gives the location where it stopped, so we continue until all games are found
     while "have_more_results" in all_json['response']:
         all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&last_appid=" + str(all_json['response']['last_appid']) + "&max_results=50000")
         all_json = all_response.json()
@@ -145,6 +152,7 @@ def recommend_games():
         for app in all_json['response']['apps']:
             all_apps[str(app['appid'])] = app['name']
         
+    #filter out possible duplicates
     app_set = set(all_apps.keys())
     
     cache_list = list(SteamGame.tag_cache.keys())
@@ -165,7 +173,7 @@ def recommend_games():
         game.calculate_rec_score(steam_user.tag_scores)
         add_to_rec_list(game, rec_list)
                 
-    #send recommendation list to HTML template as JSON
+    #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
     for rec in rec_list:
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
@@ -174,6 +182,7 @@ def recommend_games():
 
 @app.route(URL_ROOT + "delete_user")
 def delete_user():
+    """Deletes the user's data from the database."""
     connection = db.get_db()
     connection.execute("DELETE FROM " + USER_GAMES_TABLE +
                        " WHERE user_id = ?",
@@ -184,10 +193,12 @@ def delete_user():
 
 @app.route(URL_ROOT + "logout/")
 def logout():
+    """Clears the current users and returns to the login screen."""
     session["steam_user"] = None
     return redirect(url_for("begin"))
 
 def does_user_record_exist():
+    """Checks whether the current user exists in the database."""
     result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       " WHERE user_id = ?",
@@ -195,6 +206,7 @@ def does_user_record_exist():
     return result
 
 def does_game_record_exist(game_id):
+    """Checks whether the database has a record for the specified game associated with the current user."""
     result = db.query_db("""SELECT COUNT(1)
                       FROM """ + USER_GAMES_TABLE +
                       """ WHERE user_id = ?
@@ -203,6 +215,7 @@ def does_game_record_exist(game_id):
     return result
 
 def add_game_to_db(game_id):
+    """Adds a record for the specified game associated with the current user to the database."""
     connection = db.get_db()
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?)",
@@ -210,6 +223,7 @@ def add_game_to_db(game_id):
     connection.commit()
 
 def update_rating(rating, user, game_id):
+    """Changes the rating for the specified game associated with the current user in the database."""
     user.user_games[game_id].rating = int(rating) if rating != "exclude" else None
     connection = db.get_db()
     connection.execute("UPDATE " + USER_GAMES_TABLE +
@@ -220,6 +234,7 @@ def update_rating(rating, user, game_id):
     connection.commit()
     
 def add_to_rec_list(game, rec_list):
+    """Determines if the specified game should be placed in the recommendation list and inserts it if so."""
     rec_iter = iter(rec_list)
 
     #can't iterate over list directly since it might be empty

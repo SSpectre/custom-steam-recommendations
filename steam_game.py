@@ -34,6 +34,7 @@ class SteamGame:
         for tag in self.tags:
             self.rec_score += tag_scores[tag]
             
+        #adjust score for games that don't reach the target number of tags, based on a confidence value
         tag_num = len(self.tags)
         if tag_num < SteamGame.TARGET_TAGS:
             confidence = tag_num / ((SteamGame.TARGET_TAGS - 1) * 2) + 0.4737
