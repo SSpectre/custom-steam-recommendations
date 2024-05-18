@@ -63,8 +63,17 @@ def authenticate():
     
     return "<script> close() </script>"
 
+@app.route(URL_ROOT + "confirm/")
+def confirm_login():
+    """In response to an HTTP request from the client, returns the user's Steam ID if one exists or empty JSON if not."""
+    try:
+        return json.dumps({"user_id": session["steam_user"].user_id})
+    except (KeyError, AttributeError):
+        return {}
+
 @app.route(URL_ROOT + "user/")
 def get_user_id():
+    """Redirects to the main page if a user exists."""
     try:
         return redirect(url_for("list_owned_games", user_id = session["steam_user"].user_id))
     except (KeyError, AttributeError):
@@ -72,7 +81,7 @@ def get_user_id():
 
 @app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
-    """Creates user's library and displays main page."""
+    """Creates user's library and displays the main page. The user_id parameter is needed for the URL."""
     #if user tries to bypass login by directly entering Steam id, display login screen
     try:
         steam_user = session["steam_user"]
@@ -104,18 +113,12 @@ def list_owned_games(user_id):
     return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()),
                            list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE)
     
-@app.route(URL_ROOT + "confirm/")
-def confirm_login():
-    try:
-        return json.dumps({"user_id": session["steam_user"].user_id})
-    except (KeyError, AttributeError):
-        return {}
-    
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
+    """Changes the rating for a specified game in response to an HTTP request from the client."""
     data = request.get_json()
     rating = data['rating']
-    update_rating(rating, session["steam_user"], data['id'])
+    update_rating(rating, data['id'])
     
     return "{}"
 
@@ -222,8 +225,9 @@ def add_game_to_db(game_id):
                        [session["steam_user"].user_id, game_id, "NULL"])
     connection.commit()
 
-def update_rating(rating, user, game_id):
+def update_rating(rating, game_id):
     """Changes the rating for the specified game associated with the current user in the database."""
+    user = session["steam_user"]
     user.user_games[game_id].rating = int(rating) if rating != "exclude" else None
     connection = db.get_db()
     connection.execute("UPDATE " + USER_GAMES_TABLE +
