@@ -6,6 +6,11 @@ from steam_game import SteamGame
 
 class SteamUser:
     """Stores information relating to a single Steam user"""
+    
+    class NoRatingsError(Exception):
+        """Exception class for when the user hasn't entered any ratings and tries to get a recommendation list"""
+        pass
+    
     tag_set = set()
     with open('tag_set.json') as json_file:
         tag_set = json.load(json_file)
@@ -39,8 +44,13 @@ class SteamUser:
             
     def calculate_tag_scores(self):
         """Creates a dictionary of scores for each tag based on the user's ratings of their games."""
+        if len(self.user_games) == 0:
+            raise self.NoRatingsError("Please add games to your Steam library.")
+        
         #create a dictionary with tags for keys and empty lists for values
         scores = {tag: [] for tag in SteamUser.tag_set}
+        
+        number_of_ratings = 0
         
         #add to the list of ratings given to each game with a given tag
         for game_id in self.user_games:
@@ -48,6 +58,10 @@ class SteamUser:
             if game.rating != None:
                 for tag in game.tags:
                     scores[tag].append(game.rating)
+                number_of_ratings += 1
+                
+        if number_of_ratings < 2:
+            raise self.NoRatingsError("At least two ratings are required to give recommendations.")
                    
         score_sum = 0
         number_of_scores = 0

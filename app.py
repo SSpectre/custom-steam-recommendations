@@ -1,7 +1,7 @@
 import requests
 import json
 
-from flask import Flask, redirect, request, url_for, render_template, session
+from flask import Flask, redirect, request, url_for, render_template, session, make_response
 from flask_cors import CORS
 from flask_session import Session
 from urllib.parse import urlencode
@@ -118,7 +118,32 @@ def assign_rating():
     """Changes the rating for a specified game in response to an HTTP request from the client."""
     data = request.get_json()
     rating = data['rating']
-    update_rating(rating, data['id'])
+    game_id = data['id']
+    user = session["steam_user"]
+    
+    user.user_games[game_id].rating = int(rating) if rating != "exclude" else None
+    connection = db.get_db()
+    connection.execute("UPDATE " + USER_GAMES_TABLE +
+                       """ SET rating = ?
+                       WHERE user_id = ?
+                       AND game_id = ?""",
+                       [rating if rating != "exclude" else "NULL", user.user_id, game_id])
+    connection.commit()
+    
+    return "{}"
+
+@app.route(URL_ROOT + "clear_ratings")
+def clear_ratings():
+    user = session["steam_user"]
+    for game_id in user.user_games:
+        user.user_games[game_id].rating = None
+        
+    connection = db.get_db()
+    connection.execute("UPDATE " + USER_GAMES_TABLE +
+                       """ SET rating = NULL
+                       WHERE user_id = ?""",
+                       [user.user_id])
+    connection.commit()
     
     return "{}"
 
@@ -138,7 +163,13 @@ def change_list_size():
 def recommend_games():
     """Constructs the recommendation list."""
     steam_user = session["steam_user"]
-    steam_user.calculate_tag_scores()
+    
+    try:
+        steam_user.calculate_tag_scores()
+    except steam_user.NoRatingsError as e:
+        print(str(e))
+        response = {"error_message": str(e)}
+        return make_response(json.dumps(response), 500)
 
     all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&max_results=50000")
     all_json = all_response.json()
@@ -223,18 +254,6 @@ def add_game_to_db(game_id):
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?)",
                        [session["steam_user"].user_id, game_id, "NULL"])
-    connection.commit()
-
-def update_rating(rating, game_id):
-    """Changes the rating for the specified game associated with the current user in the database."""
-    user = session["steam_user"]
-    user.user_games[game_id].rating = int(rating) if rating != "exclude" else None
-    connection = db.get_db()
-    connection.execute("UPDATE " + USER_GAMES_TABLE +
-                       """ SET rating = ?
-                       WHERE user_id = ?
-                       AND game_id = ?""",
-                       [rating if rating != "exclude" else "NULL", user.user_id, game_id])
     connection.commit()
     
 def add_to_rec_list(game, rec_list):

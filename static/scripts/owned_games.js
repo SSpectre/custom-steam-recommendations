@@ -102,8 +102,11 @@ function recommendGames(list_size) {
     $.ajax({
         type: "GET",
         url: $('body').data('recommendgames'),
+        contentType: "application/json",
+        dataType: 'json',
         success: function(response) {
             for (let i = 0; i < list_size; i++) {
+                console.log(response);
                 let game = JSON.parse(response[i]);
 
                 let url = game.store_url;
@@ -129,35 +132,52 @@ function recommendGames(list_size) {
                 clearInterval(eInterval);
             }
         },
-        error: function() {
+        error: function(xhr) {
+            let message = JSON.parse(xhr.responseText)["error_message"];
+
+            //message only exists if the user has no games/ratings
+            if (message) {
+                alert(message);
+            }
+            else {
+                errorMessage();
+            }
+
             //clear loading animation
             for (let i = 0; i < list_size; i++) {
                 $("#rec" + (i+1)).html("");
             }
-
-            errorMessage();
         },
     });
 }
 
-/** Sets all ratings for the user to N/A */
+/** Sends an HTTP request to the server to set all of the user's ratings to null. Set dropdown values to N/A if successful. */
 function clearRatings() {
-    let i = 0;
-    while (true) {
-        id = "#rating" + i;
-        rating = $(id);
+    $.ajax({
+        type: "GET",
+        url: $('body').data('clearratings'),
+        success: function() {
+            let i = 0;
+            while (true) {
+                id = "#rating" + i;
+                rating = $(id);
 
-        if (rating.length) {
-            rating.val("exclude");
-            //trigger onchange event for each dropdown
-            rating.change();
-        }
-        else {
-            //reached the end of user's library
-            break;
-        }
-        i++;
-    }
+                if (rating.length) {
+                    if (rating.val() != "exclude"){
+                        rating.val("exclude");
+                    }
+                }
+                else {
+                    //reached the end of user's library
+                    break;
+                }
+                i++;
+            }
+        },
+        error: function() {
+            errorMessage();
+        },
+    });
 }
 
 /** Sends an HTTP request to the server to delete the user's data. Logs out if successful. */

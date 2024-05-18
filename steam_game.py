@@ -39,5 +39,10 @@ class SteamGame:
         if tag_num < SteamGame.TARGET_TAGS:
             confidence = tag_num / ((SteamGame.TARGET_TAGS - 1) * 2) + 0.4737
             self.rec_score *= (SteamGame.TARGET_TAGS / tag_num * confidence)
+            
+        #adjust score for games that have too many tags
+        #this shouldn't happen at all but appears to be an issue with Steam Spy API
+        if tag_num > SteamGame.TARGET_TAGS:
+            self.rec_score *= (SteamGame.TARGET_TAGS / tag_num)
 
         self.rec_score = round(self.rec_score, 4)
