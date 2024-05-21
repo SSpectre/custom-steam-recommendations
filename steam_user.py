@@ -98,8 +98,6 @@ class SteamUser:
         #re-calculate and apply the average tag score using confidence-adjusted values
         self.apply_average_score_to_unknown_tags(score_sum, number_of_scores, scores)
         
-        print(sorted(self.tag_scores.items(), key=lambda tag: tag[1]))
-        
     def apply_average_score_to_unknown_tags(self, score_sum, number_of_scores, scores):
         """Calculate the average of existing scores and apply it to tags with no representation.
         Returns the average score."""

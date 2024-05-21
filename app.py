@@ -167,7 +167,6 @@ def recommend_games():
     try:
         steam_user.calculate_tag_scores()
     except steam_user.NoRatingsError as e:
-        print(str(e))
         response = {"error_message": str(e)}
         return make_response(json.dumps(response), 500)
 
@@ -209,8 +208,6 @@ def recommend_games():
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
-    for rec in rec_list:
-        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
 
     return json_list
 
