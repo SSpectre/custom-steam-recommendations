@@ -13,22 +13,42 @@
     min-width: 228px;
 }
 
-.align-right {
-    float: right;
-}
-
 p {
     text-align: right;
+    margin-bottom: 12.5px;
 }
 
-button,
 p,
 h1 {
     margin-inline: 10px;
 }
 
-button.inner {
-    margin-right: 0;
+#csr-buttons {
+    overflow: auto;
+}
+
+#left-buttons,
+#right-buttons {
+    display: inline-block;
+}
+
+#right-buttons {
+    float: right;
+}
+
+.align-left,
+.align-right {
+    margin-top: 10px;
+}
+
+.align-left {
+    margin-left: 10px;
+    float: left;
+}
+
+.align-right {
+    margin-right: 10px;
+    float: right;
 }
 
 h1 {
@@ -143,9 +163,45 @@ select {
         font-size: 18px;
     }
 
+    tbody tr {
+        height: 43px;
+    }
+
     th,
     td,
     select {
+        font-size: 15px;
         letter-spacing: 0;
+    }
+
+    figure img {
+        max-width: 80px;
+        max-height: 30px;
+    }
+}
+
+@media (max-width:680px) {
+    h1 {
+        font-size: 22px;
+        letter-spacing: 1px;
+    }
+
+    h2 {
+        font-size: 15px;
+    }
+
+    th,
+    td,
+    select {
+        font-size: 14px;
+    }
+
+    #rec-number-span {
+        clear: both;
+    }
+    
+    #logout-button,
+    #clear-button {
+        clear: both;
     }
 }

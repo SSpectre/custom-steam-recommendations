@@ -153,45 +153,49 @@ function recommendGames(list_size) {
 
 /** Sends an HTTP request to the server to set all of the user's ratings to null. Set dropdown values to N/A if successful. */
 function clearRatings() {
-    $.ajax({
-        type: "GET",
-        url: $('body').data('clearratings'),
-        success: function() {
-            let i = 0;
-            while (true) {
-                id = "#rating" + i;
-                rating = $(id);
+    if (confirm("Are you sure you want to clear all of your ratings?")) {
+        $.ajax({
+            type: "GET",
+            url: $('body').data('clearratings'),
+            success: function() {
+                let i = 0;
+                while (true) {
+                    id = "#rating" + i;
+                    rating = $(id);
 
-                if (rating.length) {
-                    if (rating.val() != "exclude"){
-                        rating.val("exclude");
+                    if (rating.length) {
+                        if (rating.val() != "exclude"){
+                            rating.val("exclude");
+                        }
                     }
+                    else {
+                        //reached the end of user's library
+                        break;
+                    }
+                    i++;
                 }
-                else {
-                    //reached the end of user's library
-                    break;
-                }
-                i++;
-            }
-        },
-        error: function() {
-            errorMessage();
-        },
-    });
+            },
+            error: function() {
+                errorMessage();
+            },
+        });
+    }
 }
 
 /** Sends an HTTP request to the server to delete the user's data. Logs out if successful. */
 function deleteUser() {
-    $.ajax({
-        type: "GET",
-        url: $('body').data('deleteuser'),
-        success: function() {
-            window.location = $('body').data('logout');
-        },
-        error: function() {
-            errorMessage();
-        },
-    });
+    if (confirm("Are you sure you want to delete your user data?")) {
+        $.ajax({
+            type: "GET",
+            url: $('body').data('deleteuser'),
+            success: function() {
+                window.location = $('body').data('logout');
+            },
+            error: function() {
+                errorMessage();
+            },
+        });
+    }
 }
 
 /** Tells the parent container to resize the containing iframe. To be called when all elements are loaded. */
