@@ -14,9 +14,13 @@
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
 			<span id="left-buttons">
-				<button type="button" class="rec-button align-left" onclick="recommendGames({{list_size}})">Recommend Games</button>
+				<button type="button" id="rec-button" class="align-left" onclick="recommendGames({{list_size}})">
+					<span>Recommend</span>
+					<span id="rec-button-span-large"> Games</span>
+				</button>
 				<span id="rec-number-span" class="align-left">
-					<label for="rec-number">Recommendations:</label>
+					<label for="rec-number" class="rec-size-label-large">Recommendations:</label>
+					<label for="rec-number" class="rec-size-label-small">#:</label>
 					<select name="rec-number" class="rec-number" onchange="changeListSize(this.value)">
 						<option value="10" {% if list_size == 10 %} selected {% endif %}>10</option>
 						<option value="50" {% if list_size == 50 %} selected {% endif %}>50</option>
@@ -24,15 +28,27 @@
 						<option value="500" {% if list_size == 500 %} selected {% endif %}>500</option>
 					</select>
 				</span>
+				<button type="button" class="column-switch-button align-left" onclick="switchColumns()" data-showinglibrary="true">
+					>>
+				</button>
 			</span>
 			<span id="right-buttons">
-				<button type="button" class="align-right" onclick="deleteUser()">Delete User Data</button>
-				<button type="button" id="clear-button" class="align-right" onclick="clearRatings()">Clear Ratings</button>
-				<button type="button" id="logout-button" class="align-right" onclick="window.location.href = '{{url_for('logout')}}'">Log Out</button>
+				<button type="button" id="delete-button" class="align-right" onclick="deleteUser()">
+					<span>Delete User Data</span>
+					<img id="delete-icon" src="{{url_for('static', filename='images/delete-icon.png')}}" alt="Delete User Data">
+				</button>
+				<button type="button" id="clear-button" class="align-right" onclick="clearRatings()">
+					<span>Clear Ratings</span>
+					<img id="clear-icon" src="{{url_for('static', filename='images/clear-icon.png')}}" alt="Clear Ratings">
+				</button>
+				<button type="button" id="logout-button" class="align-right" onclick="window.location.href = '{{url_for('logout')}}'">
+					<span>Log Out</span>
+					<img id="logout-icon" src="{{url_for('static', filename='images/logout-icon.png')}}" alt="Log Out">
+				</button>
 			</span>
 		</div>
 		<div class="row">
-			<span class="column">
+			<span id="library-column" class="column">
 				<h1>Current Library:</h1>
 				<table id="ownedgames">
 					<thead>
@@ -72,7 +88,7 @@
 					</tbody>
 				</table>
 			</span>
-			<span class="column">
+			<span id="rec-column" class="column">
 				<h1>Recommendations:</h1>
 				<table id="recommendations">
 					<thead>

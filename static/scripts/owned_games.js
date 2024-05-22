@@ -41,7 +41,7 @@ function changeListSize(size) {
         dataType: 'json',
         success: function(response) {
             let oldSize = JSON.parse(response["old_size"]);
-            $(".rec-button").attr("onclick", "recommendGames('" + size + "')");
+            $("#rec-button").attr("onclick", "recommendGames('" + size + "')");
 
             //redraw recommendation list, keeping existing recommendations
             let innerHTML = "";
@@ -98,6 +98,10 @@ function recommendGames(list_size) {
 
         $(".ellipsis").html(innerHTML);
     }, 333);
+
+    if ($('.column-switch-button').data('showinglibrary')) {
+        switchColumns();
+    }
     
     $.ajax({
         type: "GET",
@@ -195,6 +199,28 @@ function deleteUser() {
                 errorMessage();
             },
         });
+    }
+}
+
+/** Switches whether the library or recommendation column is visible when the window is too thin to display both */
+function switchColumns() {
+    //showingLibrary needs to be a string so it can be stored as an HTML data attribute
+    let button = $('.column-switch-button');
+    let showingLibrary = button.data('showinglibrary');
+
+    if (showingLibrary) {
+        button.html("<<");
+        button.data('showinglibrary', "")
+
+        $('#library-column').css('display', 'none');
+        $('#rec-column').css('display', 'inline-block');
+    }
+    else {
+        button.html(">>");
+        button.data('showinglibrary', "true")
+
+        $('#library-column').css('display', 'inline-block');
+        $('#rec-column').css('display', 'none');
     }
 }
 

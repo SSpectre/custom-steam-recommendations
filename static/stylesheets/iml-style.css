@@ -226,7 +226,7 @@ button,
 html input[type=button],
 input[type=reset],
 input[type=submit] {
-    background-color: #ac4600;
+    background: linear-gradient(to bottom, #ac4600 5%, #862300 95%);
     color: #fff;
 }
 
@@ -235,8 +235,8 @@ html input[type=button]:hover:enabled,
 input[type=reset]:hover:enabled,
 input[type=submit]:hover:enabled
 {
-    background-color: #913b00;
-	color: #ccc;
+    background: linear-gradient(to bottom, #9c2a00 5%, #751f00 95%);
+	color: #ddd;
 }
 
 button:focus
