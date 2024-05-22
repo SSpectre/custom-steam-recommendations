@@ -29,6 +29,14 @@ function assignRating(gameID, rating) {
  * @param {string} size - The new number of recommendations.
  */
 function changeListSize(size) {
+    //have all instances of the recommendation number dropdown reflect the new size
+    $(".rec-number").val(size);
+
+    //prevent list resize while calculation in progress
+    if (calculatingRecs()) {
+        return;
+    }
+
     var data = {
         size: size
     };
@@ -41,7 +49,7 @@ function changeListSize(size) {
         dataType: 'json',
         success: function(response) {
             let oldSize = JSON.parse(response["old_size"]);
-            $("#rec-button").attr("onclick", "recommendGames('" + size + "')");
+            $(".rec-button").attr("onclick", "recommendGames('" + size + "')");
 
             //redraw recommendation list, keeping existing recommendations
             let innerHTML = "";
@@ -65,9 +73,6 @@ function changeListSize(size) {
                 recommendGames(size);
             }
 
-            //have all instances of the recommendation number dropdown reflect the new size
-            $(".rec-number").val(size);
-
             //tell parent container to resize the iframe. Needs to be placed here in case the list is smaller and recommendGames() isn't called
             loadComplete();
         },
@@ -81,6 +86,11 @@ function changeListSize(size) {
  * @param {number} list_size - Number of games to recommend.
  */
 function recommendGames(list_size) {
+    //prevent recommendations while calculation in progress
+    if (calculatingRecs()) {
+        return;
+    }
+
     //scrolls to top of page, since that's where recommendations appear.
     parent.window.scrollTo(0,0);
 
@@ -231,6 +241,17 @@ function switchColumns() {
 
     //resize iframe if the visible column is larger
     loadComplete();
+}
+
+/** Function for checking if recommendation calculation is currently in progress. Returns a boolean and causes an alert asking the user to wait if true */
+function calculatingRecs() {
+    let calculatingRegex = new RegExp("^Calculating");
+    if (calculatingRegex.test($("#rec1").html())) {
+        alert("Please wait while recommendations are being calculated.")
+        return true;
+    }
+
+    return false;
 }
 
 /** Tells the parent container to resize the containing iframe. To be called when all elements are loaded. */
