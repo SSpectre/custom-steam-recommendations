@@ -1,10 +1,18 @@
 #login-image:hover {
-    opacity: 0.85
+    opacity: 0.85;
+}
+
+button img {
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    display: none;
 }
 
 .row {
     white-space: nowrap;
     margin-bottom: 1.5em;
+    clear: both;
 }
 
 .column {
@@ -49,6 +57,23 @@ h1 {
 .align-right {
     margin-right: 10px;
     float: right;
+}
+
+button.align-left {
+    background: linear-gradient(to bottom, #a4d007 5%, #536904 95%);
+}
+
+button.align-left:hover {
+    background: linear-gradient(to bottom, #b6d908 5%, #80a006 95%);
+    color: #fff;
+}
+
+.rec-size-label-small {
+    display: none;
+}
+
+.column-switch-button {
+    display: none;
 }
 
 h1 {
@@ -144,7 +169,7 @@ select {
     }
 
     h2 {
-        font-size: 22px;
+        font-size: 22px; 
     }
 
     th,
@@ -181,27 +206,49 @@ select {
 }
 
 @media (max-width:680px) {
-    h1 {
-        font-size: 22px;
-        letter-spacing: 1px;
-    }
-
-    h2 {
-        font-size: 15px;
-    }
-
-    th,
-    td,
-    select {
-        font-size: 14px;
-    }
-
-    #rec-number-span {
+    .align-left,
+    .align-right {
         clear: both;
     }
-    
-    #logout-button,
-    #clear-button {
-        clear: both;
+
+    #rec-button-span-large {
+        display: none;
+    }
+
+    .rec-size-label-small {
+        display: inline;
+    }
+
+    .rec-size-label-large {
+        display: none;
+    }
+
+    .column-switch-button {
+        display: block;
+    }
+
+    .column {
+        width: 100%;
+    }
+
+    #rec-column {
+        display: none;
+    }
+
+    .align-right span {
+        display: none;
+    }
+
+    button img {
+        width: 19px;
+        height: 19px;
+        margin: 0;
+        display: block;
+    }
+}
+
+@media (min-width:680px) {
+    .column {
+        display: inline-block !important;
     }
 }
