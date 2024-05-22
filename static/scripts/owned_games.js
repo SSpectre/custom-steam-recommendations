@@ -202,6 +202,7 @@ function deleteUser() {
     }
 }
 
+/** Logs out the user */
 function logout() {
     if (confirm("Are you sure you want to log out?")) {
         window.location = $('body').data('logout');
