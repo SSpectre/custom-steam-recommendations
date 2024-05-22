@@ -211,6 +211,10 @@ select {
         clear: both;
     }
 
+    .rec-button {
+        width: 6.5em;
+    }
+
     #rec-button-span-large {
         display: none;
     }
@@ -223,8 +227,13 @@ select {
         display: none;
     }
 
+    .rec-number {
+        width: 5.2em;
+    }
+
     .column-switch-button {
         display: block;
+        width: 6.5em;
     }
 
     .column {

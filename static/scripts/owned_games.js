@@ -41,7 +41,7 @@ function changeListSize(size) {
         dataType: 'json',
         success: function(response) {
             let oldSize = JSON.parse(response["old_size"]);
-            $("#rec-button").attr("onclick", "recommendGames('" + size + "')");
+            $(".rec-button").attr("onclick", "recommendGames('" + size + "')");
 
             //redraw recommendation list, keeping existing recommendations
             let innerHTML = "";
