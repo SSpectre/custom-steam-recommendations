@@ -221,6 +221,9 @@ function switchColumns() {
         $('#library-column').css('display', 'inline-block');
         $('#rec-column').css('display', 'none');
     }
+
+    //resize iframe if the visible column is larger
+    loadComplete();
 }
 
 /** Tells the parent container to resize the containing iframe. To be called when all elements are loaded. */
