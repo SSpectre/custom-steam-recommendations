@@ -201,6 +201,13 @@ function deleteUser() {
     }
 }
 
+/** Logs out the user */
+function logout() {
+    if (confirm("Are you sure you want to log out?")) {
+        window.location = $('body').data('logout');
+    }
+}
+
 /** Switches whether the library or recommendation column is visible when the window is too thin to display both */
 function switchColumns() {
     //showingLibrary needs to be a string so it can be stored as an HTML data attribute
