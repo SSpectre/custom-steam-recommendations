@@ -225,7 +225,7 @@ def delete_user():
 @app.route(URL_ROOT + "logout/")
 def logout():
     """Clears the current users and returns to the login screen."""
-    session["steam_user"] = None
+    session.clear()
     return redirect(url_for("begin"))
 
 def does_user_record_exist():
