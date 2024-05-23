@@ -4,8 +4,14 @@ function confirmLogin() {
         type: "GET",
         url: $('body').data('confirmlogin'),
         success: function(response) {
-            //confirm_login returns empty json if error was encountered
-            if (response.length > 0) {
+            try {
+                json = JSON.parse(response);
+            }
+            catch {
+                return;
+            }
+            
+            if (json["user_id"]) {
                 //draw loading message
                 $("#login-button").hide();
                 $("#center-content").empty();

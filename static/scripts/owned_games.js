@@ -120,7 +120,6 @@ function recommendGames(list_size) {
         dataType: 'json',
         success: function(response) {
             for (let i = 0; i < list_size; i++) {
-                console.log(response);
                 let game = JSON.parse(response[i]);
 
                 let url = game.store_url;
