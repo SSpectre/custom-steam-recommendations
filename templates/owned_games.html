@@ -14,10 +14,7 @@
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
 			<span id="left-buttons">
-				<button type="button" class="rec-button align-left" onclick="recommendGames({{list_size}})">
-					<span>Recommend</span>
-					<span id="rec-button-span-large"> Games</span>
-				</button>
+				<button type="button" class="rec-button align-left" onclick="recommendGames({{list_size}})">Recommend Games</button>
 				<span id="rec-number-span" class="align-left">
 					<label for="rec-number" class="rec-size-label-large">Recommendations:</label>
 					<label for="rec-number" class="rec-size-label-small">#:</label>
@@ -29,7 +26,7 @@
 					</select>
 				</span>
 				<button type="button" class="column-switch-button align-left" onclick="switchColumns()" data-showinglibrary="true">
-					>>
+					Recommendations >>
 				</button>
 			</span>
 			<span id="right-buttons">
@@ -46,6 +43,33 @@
 					<img id="logout-icon" src="{{url_for('static', filename='images/logout-icon.png')}}" alt="Log Out">
 				</button>
 			</span>
+			<br>
+			<div class="align-left">
+				<details>
+					<summary>Mature Content Filters</summary>
+					<p>Recommend games featuring:</p>
+					<div class="checkbox">
+						<input type="checkbox" id="mature-check" name="mature-check" value="5" checked>
+						<label for="mature-check"> General Mature Content</label>
+					</div>
+					<div class="checkbox">
+						<input type="checkbox" id="violence-check" name="violence-check" value="2" checked>
+						<label for="violence-check"> Frequent Violence or Gore</label>
+					</div>
+					<div class="checkbox">
+						<input type="checkbox" id="sex-check" name="sex-check" value="1" checked>
+						<label for="sex-check"> Some Nudity or Sexual Content</label>
+					</div>
+					<div class="checkbox">
+						<input type="checkbox" id="softcore-check" name="softcore-check" value="4" checked>
+						<label for="softcore-check"> Frequent Nudity or Sexual Content</label>
+					</div>
+					<div class="checkbox">
+						<input type="checkbox" id="hardcore-check" name="hardcore-check" value="3" checked>
+					<label for="hardcore-check"> Adult Only Sexual Content</label>
+					</div>
+				</details>
+			</div>
 		</div>
 		<div class="row">
 			<span id="library-column" class="column">

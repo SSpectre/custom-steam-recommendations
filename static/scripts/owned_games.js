@@ -225,14 +225,14 @@ function switchColumns() {
     let showingLibrary = button.data('showinglibrary');
 
     if (showingLibrary) {
-        button.html("<<");
+        button.html("<< Library");
         button.data('showinglibrary', "")
 
         $('#library-column').css('display', 'none');
         $('#rec-column').css('display', 'inline-block');
     }
     else {
-        button.html(">>");
+        button.html("Recommendations >>");
         button.data('showinglibrary', "true")
 
         $('#library-column').css('display', 'inline-block');

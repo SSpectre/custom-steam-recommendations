@@ -272,10 +272,6 @@ img {
 }
 
 @media (max-width:900px) {
-    body {
-        font-size: 16px
-    }
-
     h1 {
         font-size: 26px
     }
@@ -309,15 +305,8 @@ img {
     }
 
     iframe,
-    input,
     textarea {
         width: 100%
-    }
-}
-
-@media (max-width:767px) {
-    body {
-        font-size: 16px
     }
 }
 
