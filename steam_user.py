@@ -21,6 +21,14 @@ class SteamUser:
         self.user_games = {}
         self.tag_scores = {}
         
+        """0: unused, exists to align Steam's internal indexing with Python's lists
+        1: Some Nudity or Sexual Content
+        2: Frequent Violence or Gore
+        3: Adult Only Sexual Content
+        4: Frequent Nudity of Sexual Content
+        5: General Mature Content"""
+        self.content_filters = [0, 1, 1, 0, 0, 1]
+        
         self.get_name()
         self.get_owned_games()
 

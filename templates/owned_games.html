@@ -10,7 +10,7 @@
 		<link rel="stylesheet" media="print" onload="this.onload=null;this.media='all';" id="ao_optimized_gfonts" href="https://fonts.googleapis.com/css?family=Ubuntu%7CUbuntu%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic&#038;subset=greek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic%2Cgreek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic&amp;display=swap">
 	</head>
 	<body id="csr-body" onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-changelistsize="{{url_for('change_list_size')}}"
-		data-recommendgames="{{url_for('recommend_games')}}" data-clearratings="{{url_for('clear_ratings')}}" data-deleteuser="{{url_for('delete_user')}}" data-logout="{{url_for('logout')}}">
+		data-updatefilterpref="{{url_for('update_filter_pref')}}" data-recommendgames="{{url_for('recommend_games')}}" data-clearratings="{{url_for('clear_ratings')}}" data-deleteuser="{{url_for('delete_user')}}"data-logout="{{url_for('logout')}}">
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
 			<span id="left-buttons">
@@ -48,24 +48,34 @@
 				<details>
 					<summary>Mature Content Filters</summary>
 					<p>Recommend games featuring:</p>
+					{% set mature_value = 5 %}
+					{% set violence_value = 2 %}
+					{% set nudity_value = 1 %}
+					{% set softcore_value = 4 %}
+					{% set hardcore_value = 3 %}
 					<div class="checkbox">
-						<input type="checkbox" id="mature-check" name="mature-check" value="5" checked>
+						<input type="checkbox" id="mature-check" class="filter-check-{{mature_value}}" name="mature-check" value="{{mature_value}}"
+							onclick="updateFilterPref({{mature_value}}, this.checked)" {% if filter_prefs[mature_value] %} checked {% endif %}>
 						<label for="mature-check"> General Mature Content</label>
 					</div>
 					<div class="checkbox">
-						<input type="checkbox" id="violence-check" name="violence-check" value="2" checked>
+						<input type="checkbox" id="violence-check" class="filter-check-{{violence_value}}" name="violence-check" value="{{violence_value}}"
+							onclick="updateFilterPref({{violence_value}}, this.checked)" {% if filter_prefs[violence_value] %} checked {% endif %}>
 						<label for="violence-check"> Frequent Violence or Gore</label>
 					</div>
 					<div class="checkbox">
-						<input type="checkbox" id="sex-check" name="sex-check" value="1" checked>
-						<label for="sex-check"> Some Nudity or Sexual Content</label>
+						<input type="checkbox" id="nudity-check" class="filter-check-{{nudity_value}}" name="nudity-check" value="{{nudity_value}}"
+							onclick="updateFilterPref({{nudity_value}}, this.checked)" {% if filter_prefs[nudity_value] %} checked {% endif %}>
+						<label for="nudity-check"> Some Nudity or Sexual Content</label>
 					</div>
 					<div class="checkbox">
-						<input type="checkbox" id="softcore-check" name="softcore-check" value="4" checked>
+						<input type="checkbox" id="softcore-check" class="filter-check-{{softcore_value}}" name="softcore-check" value="{{softcore_value}}"
+							onclick="updateFilterPref({{softcore_value}}, this.checked)" {% if filter_prefs[softcore_value] %} checked {% endif %}>
 						<label for="softcore-check"> Frequent Nudity or Sexual Content</label>
 					</div>
 					<div class="checkbox">
-						<input type="checkbox" id="hardcore-check" name="hardcore-check" value="3" checked>
+						<input type="checkbox" id="hardcore-check" class="filter-check-{{hardcore_value}}" name="hardcore-check" value="{{hardcore_check}}"
+							onclick="updateFilterPref({{hardcore_value}}, this.checked)" {% if filter_prefs[hardcore_value] %} checked {% endif %}>
 					<label for="hardcore-check"> Adult Only Sexual Content</label>
 					</div>
 				</details>

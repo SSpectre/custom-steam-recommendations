@@ -82,10 +82,36 @@ function changeListSize(size) {
     });
 }
 
-/** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
- * @param {number} list_size - Number of games to recommend.
+/** Sends an HTTP request to the server to update one of the user's content filter preferences in the database.
+ * @param {number} filterID - The id of the filter from 1-5, using Steam's internal numbering.
+ * @param {boolean} value - Whether or not the content is allowed to be recommended.
  */
-function recommendGames(list_size) {
+function updateFilterPref(filterID, value) {
+    $(".filter-check-" + filterID).prop('checked', value);
+
+    var data = {
+        filterID: filterID,
+        value: value
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('updatefilterpref'),
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        dataType: 'json',
+        error: function() {
+            //revert clicked checkboxes
+            $(".filter-check-" + filterID).prop('checked', !value);
+            errorMessage();
+        }
+    });
+}
+
+/** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
+ * @param {number} listSize - Number of games to recommend.
+ */
+function recommendGames(listSize) {
     //prevent recommendations while calculation in progress
     if (calculatingRecs()) {
         return;
@@ -95,7 +121,7 @@ function recommendGames(list_size) {
     parent.window.scrollTo(0,0);
 
     //loading animation
-    for (let i = 0; i < list_size; i++) {
+    for (let i = 0; i < listSize; i++) {
         $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }
 
@@ -119,7 +145,7 @@ function recommendGames(list_size) {
         contentType: "application/json",
         dataType: 'json',
         success: function(response) {
-            for (let i = 0; i < list_size; i++) {
+            for (let i = 0; i < listSize; i++) {
                 let game = JSON.parse(response[i]);
 
                 let url = game.store_url;
@@ -127,7 +153,7 @@ function recommendGames(list_size) {
                 let name = game.game_name;
 
                 //add onload event to last image in the list to notify parent container to resize iframe
-                let finalLoad = i == list_size - 1 ? ` onload='loadComplete()'` : ``;
+                let finalLoad = i == listSize - 1 ? ` onload='loadComplete()'` : ``;
 
                 //draw recommendation
                 let innerHTML =
@@ -157,7 +183,7 @@ function recommendGames(list_size) {
             }
 
             //clear loading animation
-            for (let i = 0; i < list_size; i++) {
+            for (let i = 0; i < listSize; i++) {
                 $("#rec" + (i+1)).html("");
             }
         },

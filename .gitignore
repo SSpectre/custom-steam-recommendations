@@ -163,6 +163,7 @@ cython_debug/
 tags.json
 tag_set.json
 user_ratings.db
+users.db
 
 api_test.py
 app_difference.json
