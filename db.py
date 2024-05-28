@@ -3,7 +3,7 @@ import sqlite3
 from flask import current_app, g
 
 SCHEMA_FILE = "schema.sql"
-DATABASE_FILE = "user_ratings.db"
+DATABASE_FILE = "users.db"
 
 def init_db():
     """Creates database from schema file."""

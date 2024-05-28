@@ -3,8 +3,8 @@
 }
 
 button img {
-    width: 19px;
-    height: 19px;
+    width: 1.2675em;
+    height: 1.2675em;
     margin: 0;
     display: none;
 }
@@ -23,12 +23,13 @@ button img {
 
 p {
     text-align: right;
-    margin-bottom: 12.5px;
+    margin-bottom: 0.85em;
+    margin-inline: 0.7em;
+    line-height: 1em;
 }
 
-p,
 h1 {
-    margin-inline: 10px;
+    margin-inline: 0.3em;
 }
 
 #csr-buttons {
@@ -46,16 +47,16 @@ h1 {
 
 .align-left,
 .align-right {
-    margin-top: 10px;
+    margin-top: 0.67em;
 }
 
 .align-left {
-    margin-left: 10px;
+    margin-left: 0.67em;
     float: left;
 }
 
 .align-right {
-    margin-right: 10px;
+    margin-right: 0.67em;
     float: right;
 }
 
@@ -74,6 +75,28 @@ button.align-left:hover {
 
 .column-switch-button {
     display: none;
+}
+
+details > * {
+    margin-left: 1em;
+}
+
+details > summary {
+    cursor: pointer;
+    margin-left: 0;
+}
+
+details > p {
+    text-align: left;
+    margin-block: 0.5em;
+}
+
+.checkbox {
+    display: flex;
+}
+
+.checkbox > label {
+    margin: auto 0.5em;
 }
 
 h1 {
@@ -140,6 +163,7 @@ figcaption {
     margin: auto 0;
 }
 
+body,
 a,
 a:visited {
     color: #212121;
@@ -151,16 +175,16 @@ a:hover {
 
 label {
     color: #212121;
-    margin-right: 5px;
+    margin-right: 0.3333em;
 }
 
 select {
     font-size: 24px;
-    height: 31px;
 }
 
 #csr-buttons select {
     font-size: 15px;
+    height: 2.067em;
 }
 
 @media (max-width: 900px) {
@@ -211,14 +235,6 @@ select {
         clear: both;
     }
 
-    .rec-button {
-        width: 6.5em;
-    }
-
-    #rec-button-span-large {
-        display: none;
-    }
-
     .rec-size-label-small {
         display: inline;
     }
@@ -228,12 +244,19 @@ select {
     }
 
     .rec-number {
-        width: 5.2em;
+        width: 8.7em;
     }
 
     .column-switch-button {
         display: block;
-        width: 6.5em;
+    }
+
+    button.align-left {
+        width: 10em;
+    }
+    
+    button.align-right {
+        width: 7.75em;
     }
 
     .column {
@@ -243,15 +266,18 @@ select {
     #rec-column {
         display: none;
     }
+}
+
+@media (max-width:330px) {
+    button.align-right {
+        width: auto;
+    }
 
     .align-right span {
         display: none;
     }
 
     button img {
-        width: 19px;
-        height: 19px;
-        margin: 0;
         display: block;
     }
 }

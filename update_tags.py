@@ -10,6 +10,7 @@ class NotGameError(Exception):
 app_ids = []
 game_tag_dict = { }
 tag_set = set()
+content_flag_dict = { }
 
 #for determining overall time taken by the script
 start_time = time.time()
@@ -105,8 +106,9 @@ for id in id_set:
     try:
         #filter out non-game software from the set
         type_json = query_limited_api("https://store.steampowered.com/api/appdetails?appids=", id, 300)
+        type_data = type_json[str(id)]['data']
         
-        if type_json[str(id)]['data']['type'] == "game":
+        if type_data['type'] == "game":
             #add game and its tags to cache
             tag_json = query_limited_api("https://steamspy.com/api.php?request=appdetails&appid=", id, 1)
             tags = tag_json['tags'].keys()
@@ -114,6 +116,9 @@ for id in id_set:
             
             #add game's tags to the set of all tags
             tag_set = tag_set | set(tags)
+            
+            #add game and its content flags to cache
+            content_flag_dict[id] = type_data['content_descriptors']['ids']
             
             print("Valid")
         else:
@@ -126,6 +131,9 @@ with open('tags.json', 'w') as tags_file:
     
 with open('tag_set.json', 'w') as set_file:
     json.dump(list(tag_set), set_file)
+    
+with open('content_flags.json', 'w') as flags_file:
+    json.dump(content_flag_dict, flags_file)
     
 elapsed_time = time.time() - start_time
     

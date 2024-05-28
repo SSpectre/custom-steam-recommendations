@@ -3,8 +3,12 @@ import json
 class SteamGame:
     """Stores information relating to a single Steam game and provides access to the tag cache."""
     tag_cache = { }
-    with open('tags.json') as json_file:
-        tag_cache = json.load(json_file)
+    with open('tags.json') as tag_file:
+        tag_cache = json.load(tag_file)
+        
+    flag_cache = { }
+    with open('content_flags.json') as flag_file:
+        flag_cache = json.load(flag_file)
         
     TARGET_TAGS = 20
     
@@ -12,6 +16,7 @@ class SteamGame:
         self.game_id = id
         self.game_name = name
         self.tags = []
+        self.content_flags = []
         
         #Steam API only supports icon URL, so we grab the logo URL directly
         self.game_logo_url = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + str(self.game_id) + "/capsule_184x69.jpg"
@@ -20,6 +25,11 @@ class SteamGame:
         #Some games aren't present in the tag cache; usually means they have no store listing
         try:
             self.tags = SteamGame.tag_cache[str(self.game_id)]
+        except KeyError:
+            pass
+        
+        try:
+            self.content_flags = SteamGame.flag_cache[str(self.game_id)]
         except KeyError:
             pass
         

@@ -26,6 +26,7 @@ cors = CORS(app)
 URL_ROOT = "/custom-steam-recommendations/"
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
 USER_GAMES_TABLE = "user_games"
+USER_FILTER_PREFS_TABLE = "user_filter_prefs"
 DEFAULT_LIST_SIZE = 100
 
 @app.route(URL_ROOT)
@@ -88,13 +89,12 @@ def list_owned_games(user_id):
         games_list = steam_user.user_games.values()
     except (KeyError, AttributeError):
         return redirect(url_for("begin"))
-    user_exists = does_user_record_exist()
     
+    user_exists = does_user_record_exist(USER_GAMES_TABLE)
     if user_exists:
-        #existing user; add new games to db and retrieve stored ratings
+        #add new games to db and retrieve stored ratings
         for game in games_list:
             game_exists = does_game_record_exist(game.game_id)
-            
             if game_exists:
                 rating = db.query_db("""SELECT rating
                                     FROM """ + USER_GAMES_TABLE +
@@ -104,14 +104,32 @@ def list_owned_games(user_id):
                 game.rating = rating if rating != "NULL" else None
             else:
                 add_game_to_db(game.game_id)
+               
+        #in case the user doesn't have existing filter preferences
+        filters_exist = does_user_record_exist(USER_FILTER_PREFS_TABLE)
+        if filters_exist:
+            #retrieve user's content filter preferences 
+            for i in range(1, 6):
+                column = "include_flag_" + str(i)
+                include_flag = db.query_db("SELECT " + column +
+                                        " FROM " + USER_FILTER_PREFS_TABLE +
+                                        " WHERE user_id = ?",
+                                        [steam_user.user_id], True)[column]
+                steam_user.content_filters[i] = include_flag
+        else:
+            #set content filter preferences to default
+            add_filter_prefs()
             
     else:
         #new user; add all their games to db with no scores
         for game in games_list:
             add_game_to_db(game.game_id)
+            
+        #set content filter preferences to default
+        add_filter_prefs()
     
     return render_template("owned_games.html", user_name = steam_user.user_name, games = sorted(games_list, key=lambda game: game.game_name.casefold()),
-                           list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE)
+                           list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters)
     
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
@@ -128,6 +146,25 @@ def assign_rating():
                        WHERE user_id = ?
                        AND game_id = ?""",
                        [rating if rating != "exclude" else "NULL", user.user_id, game_id])
+    connection.commit()
+    
+    return "{}"
+
+@app.route(URL_ROOT + "update_filter_pref", methods=['POST'])
+def update_filter_pref():
+    """Changes one of the user's mature content filter preferences in response to an HTTP request from the client."""
+    data = request.get_json()
+    filter_id = data['filterID']
+    value = data['value']
+    column = "include_flag_" + str(filter_id)
+    user = session["steam_user"]
+    
+    user.content_filters[filter_id] = int(value)
+    connection = db.get_db()
+    connection.execute("UPDATE " + USER_FILTER_PREFS_TABLE +
+                       " SET " + column + """ = ?
+                       WHERE user_id = ?""",
+                       [value, session["steam_user"].user_id])
     connection.commit()
     
     return "{}"
@@ -200,11 +237,20 @@ def recommend_games():
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
 
-    #construct recommendation list 
+    
     rec_list = []
     for game in valid_games:
-        game.calculate_rec_score(steam_user.tag_scores)
-        add_to_rec_list(game, rec_list)
+        #apply mature content filters
+        allowed = True
+        for flag in game.content_flags:
+            if steam_user.content_filters[flag] == 0:
+                allowed = False
+                break
+            
+        if allowed:
+            #construct recommendation list 
+            game.calculate_rec_score(steam_user.tag_scores)
+            add_to_rec_list(game, rec_list)
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
@@ -214,10 +260,19 @@ def recommend_games():
 @app.route(URL_ROOT + "delete_user")
 def delete_user():
     """Deletes the user's data from the database."""
+    user_id = session["steam_user"].user_id
     connection = db.get_db()
+    
+    #delete ratings
     connection.execute("DELETE FROM " + USER_GAMES_TABLE +
                        " WHERE user_id = ?",
-                       [session["steam_user"].user_id])
+                       [user_id])
+    
+    #delete filter preferences
+    connection.execute("DELETE FROM " + USER_FILTER_PREFS_TABLE +
+                       " WHERE user_id = ?",
+                       [user_id])
+    
     connection.commit()
     
     return "{}"
@@ -228,10 +283,10 @@ def logout():
     session.clear()
     return redirect(url_for("begin"))
 
-def does_user_record_exist():
-    """Checks whether the current user exists in the database."""
+def does_user_record_exist(table):
+    """Checks whether the current user exists in the specified database table."""
     result = db.query_db("""SELECT COUNT(1)
-                      FROM """ + USER_GAMES_TABLE +
+                      FROM """ + table +
                       " WHERE user_id = ?",
                       [session["steam_user"].user_id], True)['COUNT(1)']
     return result
@@ -251,6 +306,18 @@ def add_game_to_db(game_id):
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?)",
                        [session["steam_user"].user_id, game_id, "NULL"])
+    connection.commit()
+    
+def add_filter_prefs():
+    """Associates mature content filters with default values with the user, and adds them to the database."""
+    user = session["steam_user"]
+    
+    connection = db.get_db()
+    connection.execute("INSERT INTO " + USER_FILTER_PREFS_TABLE +
+                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                       [user.user_id, "Some Nudity or Sexual Content", user.content_filters[1], "Frequent Violence or Gore", user.content_filters[2],
+                        "Adult Only Sexual Content", user.content_filters[3], "Frequent Nudity or Sexual Content", user.content_filters[4],
+                        "General Mature Content", user.content_filters[5]])
     connection.commit()
     
 def add_to_rec_list(game, rec_list):
