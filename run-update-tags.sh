@@ -1,2 +1,2 @@
 #!/bin/sh
-python3 update_tags.py
+python3 /home/protected/custom-steam-recommendations/update_tags.py
