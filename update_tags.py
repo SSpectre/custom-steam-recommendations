@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import sys
+import datetime
 
 class NotGameError(Exception):
     """Exception class for when an app is a DLC, tool, etc."""
@@ -40,8 +41,8 @@ def query_limited_api(url, id, threshold):
     #do-while loop
     while True:
         try:
-            print("Requesting " + url, end = "")
-            response = requests.get(url + str(id), timeout = 60)
+            print(str(datetime.datetime.now()) + " Requesting " + url + str(id), end = "")
+            response = requests.get(url + str(id), timeout = 60, headers={"Content-Type": "application/json"})
             print("...Success")
         except requests.Timeout:
             #don't need to sleep since already waited for timeout
@@ -58,7 +59,7 @@ def query_limited_api(url, id, threshold):
                 if should_retry(5, 0): continue
                 else: break
         elif response.status_code == 429:
-            print("Waiting...")
+            print(str(datetime.datetime.now()) + " Waiting...")
             global query_start_time
             
             #calculate time remaining until request limit is reset and wait until then
@@ -75,7 +76,7 @@ def query_limited_api(url, id, threshold):
             sys.exit("403 error when updating tags")
         else:
             #for unexpected errors, try 5 times, then treat the id as invalid
-            print("Response: " + str(response.status_code))
+            print(str(datetime.datetime.now()) + " Response: " + str(response.status_code))
             if should_retry(5, 60): continue
             else: break
             
@@ -87,7 +88,7 @@ def query_limited_api(url, id, threshold):
 #Steam Spy API retrieves all IDs separated into pages, so we need to add them to a single list
 while end_of_pages == False:
     try:
-        print("Page: " + str(page + 1))
+        print(str(datetime.datetime.now()) + " Page: " + str(page + 1))
         all_json = query_limited_api("https://steamspy.com/api.php?request=all&page=", page, 60)
         app_ids.extend(list(all_json.keys()))
     except AttributeError:
@@ -101,7 +102,7 @@ request_number = 0
 
 for id in id_set:
     request_number += 1
-    print(str(request_number) + ": " + str(id))
+    print(str(datetime.datetime.now()) + " " + str(request_number) + ": " + str(id))
     
     try:
         #filter out non-game software from the set
@@ -120,7 +121,7 @@ for id in id_set:
             #add game and its content flags to cache
             content_flag_dict[id] = type_data['content_descriptors']['ids']
             
-            print("Valid")
+            print(str(datetime.datetime.now()) + " Valid")
         else:
             raise NotGameError("Not a game")
     except (TypeError, KeyError, NotGameError, AttributeError):
