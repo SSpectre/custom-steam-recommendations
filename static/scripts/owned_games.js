@@ -122,17 +122,17 @@ function recommendGames(listSize) {
 
     //loading animation
     for (let i = 0; i < listSize; i++) {
-        $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
+        $("#rec" + (i+1)).html(`Calculating (<span class="percentage">0</span>%)<span class="ellipsis"></span>`);
     }
 
-    var innerHTML = "";
-    var eInterval = setInterval(function() {
-        if (innerHTML.length > 3)
-            innerHTML = "";
+    let ellipsisHTML = "";
+    let ellipsisInterval = setInterval(function() {
+        if (ellipsisHTML.length > 3)
+            ellipsisHTML = "";
         else
-            innerHTML += ".";
+            ellipsisHTML += ".";
 
-        $(".ellipsis").html(innerHTML);
+        $(".ellipsis").html(ellipsisHTML);
     }, 333);
 
     if ($('.column-switch-button').data('showinglibrary')) {
@@ -142,7 +142,6 @@ function recommendGames(listSize) {
     $.ajax({
         type: "GET",
         url: $('body').data('recommendgames'),
-        contentType: "application/json",
         dataType: 'json',
         success: function(response) {
             for (let i = 0; i < listSize; i++) {
@@ -168,7 +167,8 @@ function recommendGames(listSize) {
                 $("#rec" + (i+1)).html(innerHTML);
 
                 //stop loading animation
-                clearInterval(eInterval);
+                clearInterval(ellipsisInterval);
+                clearInterval(percentageInterval);
             }
         },
         error: function(xhr) {
@@ -188,6 +188,20 @@ function recommendGames(listSize) {
             }
         },
     });
+
+    let percentageHTML = "";
+    let percentageInterval = setInterval(function() {
+        $.ajax({
+            type: "GET",
+            url: $('body').data('getloadpercent'),
+            dataType: 'json',
+            success: function(response) {
+                percentageHTML = response["load_percent"];
+                console.log(percentageHTML);
+                $(".percentage").html(percentageHTML);
+            }
+        });
+    }, 333);
 }
 
 /** Sends an HTTP request to the server to set all of the user's ratings to null. Set dropdown values to N/A if successful. */

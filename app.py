@@ -15,6 +15,7 @@ from steam_game import SteamGame
 
 app = Flask(__name__)
 app.teardown_appcontext(db.close_db)
+app.secret_key = secret_keys.SECRET_KEY
 
 SESSION_PERMANENT = False
 SESSION_TYPE = "filesystem"
@@ -61,6 +62,7 @@ def authenticate():
     
     session["steam_user"] = SteamUser(id_number)
     session["list_size"] = DEFAULT_LIST_SIZE
+    session["load_percent"] = 0
     
     return "<script> close() </script>"
 
@@ -200,6 +202,7 @@ def change_list_size():
 def recommend_games():
     """Constructs the recommendation list."""
     steam_user = session["steam_user"]
+    session["load_percent"] = 0
     
     try:
         steam_user.calculate_tag_scores()
@@ -237,9 +240,12 @@ def recommend_games():
     unowned_games = valid_ids.difference(owned_set)
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
-
     
     rec_list = []
+    to_parse = len(valid_games)
+    parsed_total = 0
+    calc_percent = 0
+    
     for game in valid_games:
         #apply mature content filters
         allowed = True
@@ -252,6 +258,13 @@ def recommend_games():
             #construct recommendation list 
             game.calculate_rec_score(steam_user.tag_scores)
             add_to_rec_list(game, rec_list)
+            
+        parsed_total += 1
+        old_percent = calc_percent
+        calc_percent = round(parsed_total / to_parse * 100)
+        if old_percent != calc_percent:
+            session["load_percent"] = calc_percent
+            print("Loop: " + str(session["load_percent"]))
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
@@ -259,6 +272,14 @@ def recommend_games():
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
 
     return json_list
+
+@app.route(URL_ROOT + "get_load_percent")
+def get_load_percent():
+    try:
+        print("Interval: " + str(session["load_percent"]))
+        return json.dumps({"load_percent": session["load_percent"]})
+    except (KeyError):
+        return "{}"
 
 @app.route(URL_ROOT + "delete_user")
 def delete_user():
