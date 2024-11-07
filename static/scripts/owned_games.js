@@ -148,13 +148,12 @@ function recommendGames(listSize) {
             getLoadPercent(status_url, listSize);
         },
         error: function(xhr) {
-            let message = JSON.parse(xhr.responseText)["error_message"];
-
-            //message only exists if the user has no games/ratings
-            if (message) {
+            try {
+                //error message for when there are no games/ratings
+                let message = JSON.parse(xhr.responseText)["error_message"];
                 alert(message);
             }
-            else {
+            catch(err) {
                 errorMessage();
             }
 
