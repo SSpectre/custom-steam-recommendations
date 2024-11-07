@@ -1,9 +1,11 @@
 import requests
 import json
+import jsonpickle
 
-from flask import Flask, redirect, request, url_for, render_template, session, make_response
+from flask import Flask, redirect, request, url_for, render_template, session, make_response, jsonify
 from flask_cors import CORS
 from flask_session import Session
+from flask_celeryext import FlaskCeleryExt, RequestContextTask
 from urllib.parse import urlencode
 from multipledispatch import dispatch
 
@@ -15,6 +17,12 @@ from steam_game import SteamGame
 
 app = Flask(__name__)
 app.teardown_appcontext(db.close_db)
+app.config['BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.secret_key = secret_keys.SECRET_KEY
+
+ext = FlaskCeleryExt(app)
+celery = ext.celery
 
 SESSION_PERMANENT = False
 SESSION_TYPE = "filesystem"
@@ -32,7 +40,6 @@ DEFAULT_LIST_SIZE = 100
 @app.route(URL_ROOT)
 def begin():
     """"Entry point for the Flask application. Displays login page."""
-    session.permanent = False
     return render_template("login.html")
 
 @app.route(URL_ROOT + "login/")
@@ -196,10 +203,23 @@ def change_list_size():
     
     return response
 
-@app.route(URL_ROOT + "recommend_games")
+@app.route(URL_ROOT + "recommend_games", methods=['POST'])
 def recommend_games():
-    """Constructs the recommendation list."""
+    """Creates a background task to construct the recommendation list."""
     steam_user = session["steam_user"]
+    task = construct_rec_list.delay(jsonpickle.encode(steam_user), session["list_size"])
+    
+    #return empty JSON with a header directing the client to a function that can be polled for the completion percentage
+    response = make_response(jsonify({}))
+    response.status = 202
+    response.headers['location'] = url_for('get_load_percent', task_id=task.id)
+    return response
+
+@celery.task(bind=True, base=RequestContextTask)
+def construct_rec_list(self, user, list_size):
+    """Constructs the recommendation list."""
+    steam_user = jsonpickle.decode(user)
+    self.update_state(state='PENDING', meta={'load_percent': 0})
     
     try:
         steam_user.calculate_tag_scores()
@@ -210,6 +230,16 @@ def recommend_games():
 
     all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&max_results=50000")
     all_json = all_response.json()
+        
+    #percentage of overall completion after first API query differs based on list size    
+    if list_size == 500:
+        self.update_state(state='FETCHING', meta={'load_percent': 32})
+    elif list_size == 100:
+        self.update_state(state='FETCHING', meta={'load_percent': 38})
+    elif list_size == 50:
+        self.update_state(state='FETCHING', meta={'load_percent': 39})
+    else:
+        self.update_state(state='FETCHING', meta={'load_percent': 40})
     
     all_apps = {}
     for app in all_json['response']['apps']:
@@ -223,6 +253,18 @@ def recommend_games():
         for app in all_json['response']['apps']:
             all_apps[str(app['appid'])] = app['name']
         
+    #percentage of overall completion after subsequent API queries
+    if list_size == 500:
+        initial_percent = 75
+    elif list_size == 100:
+        initial_percent = 90
+    elif list_size == 50:
+        initial_percent = 93
+    else:
+        initial_percent = 95
+        
+    self.update_state(state='FETCHING', meta={'load_percent': initial_percent})
+    
     #filter out possible duplicates
     app_set = set(all_apps.keys())
     
@@ -237,9 +279,11 @@ def recommend_games():
     unowned_games = valid_ids.difference(owned_set)
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
-
-    
     rec_list = []
+    to_parse = len(valid_games)
+    parsed_total = 0
+    calc_percent = 0
+    
     for game in valid_games:
         #apply mature content filters
         allowed = True
@@ -251,14 +295,48 @@ def recommend_games():
         if allowed:
             #construct recommendation list 
             game.calculate_rec_score(steam_user.tag_scores)
-            add_to_rec_list(game, rec_list)
-                
+            add_to_rec_list(game, rec_list, list_size)
+            
+        #completion percentage of the list construction
+        parsed_total += 1
+        old_percent = calc_percent
+        calc_percent = parsed_total / to_parse * 100
+        
+        #size of list construction step compared to overall process depends on list size
+        if list_size == 500:
+            calc_percent = calc_percent * 0.25
+        elif list_size == 100:
+            calc_percent = calc_percent * 0.1
+        elif list_size == 50:
+            calc_percent = calc_percent * 0.07
+        else:
+            calc_percent = calc_percent * 0.05
+        
+        calc_percent = round(calc_percent)    
+        
+        #only update the state if a change occurred
+        if old_percent != calc_percent:
+            self.update_state(state='CONSTRUCTING', meta={'load_percent': initial_percent + calc_percent})
+    
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
     for rec in rec_list:
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+        
+    #need to include 'result' in return value to inform client when the iteration has finished
+    return {'result': 'SUCCESS', 'list': json_list}
 
-    return json_list
+@app.route(URL_ROOT + "get_load_percent/<task_id>")
+def get_load_percent(task_id):
+    """Retrieves the completion percentage of a process running in a background task."""
+    task = construct_rec_list.AsyncResult(task_id)
+    try:
+        if task.state == 'SUCCESS':
+            return task.info
+        else:
+            return json.dumps({"load_percent": task.info["load_percent"]})
+    except (KeyError, TypeError):
+        return json.dumps({"load_percent": 0})
 
 @app.route(URL_ROOT + "delete_user")
 def delete_user():
@@ -323,12 +401,12 @@ def add_filter_prefs():
                         "General Mature Content", user.content_filters[5]])
     connection.commit()
     
-def add_to_rec_list(game, rec_list):
+def add_to_rec_list(game, rec_list, list_size):
     """Determines if the specified game should be placed in the recommendation list and inserts it if so."""
     rec_iter = iter(rec_list)
 
     #can't iterate over list directly since it might be empty
-    for i in range(session["list_size"]):
+    for i in range(list_size):
         try:
             comparison_game = next(rec_iter)
         except StopIteration:
@@ -340,7 +418,7 @@ def add_to_rec_list(game, rec_list):
                 rec_list.insert(i, game)
                 
                 #limit recommendation list size
-                if len(rec_list) > session["list_size"]:
+                if len(rec_list) > list_size:
                     rec_list.pop()
                 break
     

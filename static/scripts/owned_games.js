@@ -8,7 +8,7 @@ function errorMessage() {
  * @param {string} rating - User's rating, either a number or "exclude".
  */
 function assignRating(gameID, rating) {
-    var data = {
+    let data = {
         id: gameID,
         rating: rating
     };
@@ -37,7 +37,7 @@ function changeListSize(size) {
         return;
     }
 
-    var data = {
+    let data = {
         size: size
     };
 
@@ -89,7 +89,7 @@ function changeListSize(size) {
 function updateFilterPref(filterID, value) {
     $(".filter-check-" + filterID).prop('checked', value);
 
-    var data = {
+    let data = {
         filterID: filterID,
         value: value
     };
@@ -108,7 +108,7 @@ function updateFilterPref(filterID, value) {
     });
 }
 
-/** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
+/** Sends an HTTP request to the server to calculate recommended games. Begins tracking completion percentage if successful.
  * @param {number} listSize - Number of games to recommend.
  */
 function recommendGames(listSize) {
@@ -122,17 +122,17 @@ function recommendGames(listSize) {
 
     //loading animation
     for (let i = 0; i < listSize; i++) {
-        $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
+        $("#rec" + (i+1)).html(`Calculating (<span class="percentage">0</span>%)<span class="ellipsis"></span>`);
     }
 
-    var innerHTML = "";
-    var eInterval = setInterval(function() {
-        if (innerHTML.length > 3)
-            innerHTML = "";
+    let ellipsisHTML = "";
+    window.ellipsisInterval = setInterval(function() {
+        if (ellipsisHTML.length > 3)
+            ellipsisHTML = "";
         else
-            innerHTML += ".";
+            ellipsisHTML += ".";
 
-        $(".ellipsis").html(innerHTML);
+        $(".ellipsis").html(ellipsisHTML);
     }, 333);
 
     if ($('.column-switch-button').data('showinglibrary')) {
@@ -140,36 +140,12 @@ function recommendGames(listSize) {
     }
     
     $.ajax({
-        type: "GET",
+        type: "POST",
         url: $('body').data('recommendgames'),
-        contentType: "application/json",
-        dataType: 'json',
-        success: function(response) {
-            for (let i = 0; i < listSize; i++) {
-                let game = JSON.parse(response[i]);
-
-                let url = game.store_url;
-                let logo = game.game_logo_url;
-                let name = game.game_name;
-
-                //add onload event to last image in the list to notify parent container to resize iframe
-                let finalLoad = i == listSize - 1 ? ` onload='loadComplete()'` : ``;
-
-                //draw recommendation
-                let innerHTML =
-                `<a href="#" onclick='window.open("${url}");return false;'>
-                    <figure>
-                        <img src=${logo} alt="${name}"` + finalLoad + `>
-                        <figcaption>
-                            ${name}
-                        </figcaption>
-                    </figure>
-                </a>`;
-                $("#rec" + (i+1)).html(innerHTML);
-
-                //stop loading animation
-                clearInterval(eInterval);
-            }
+        success: function(data, status, xhr) {
+            //response contains function that can be used to retrieve task completion percentage
+            let status_url = xhr.getResponseHeader('Location');
+            getLoadPercent(status_url, listSize);
         },
         error: function(xhr) {
             let message = JSON.parse(xhr.responseText)["error_message"];
@@ -187,6 +163,54 @@ function recommendGames(listSize) {
                 $("#rec" + (i+1)).html("");
             }
         },
+    });
+}
+
+/** Sends an HTTP request to the server to retrieve the completion percentage of the loading task.
+ * @param {string} url - The URL to send the request to.
+ * @param {number} listSize - Number of games being recommended.
+ */
+function getLoadPercent(url, listSize) {
+    $.getJSON(url, function(response) {
+        //only true when loading is finished
+        if ('result' in response) {
+            let gameList = response['list'];
+            for (let i = 0; i < listSize; i++) {
+                let game = JSON.parse(gameList[i]);
+        
+                let url = game.store_url;
+                let logo = game.game_logo_url;
+                let name = game.game_name;
+        
+                //add onload event to last image in the list to notify parent container to resize iframe
+                let finalLoad = i == listSize - 1 ? ` onload='loadComplete()'` : ``;
+        
+                //draw recommendation
+                let innerHTML =
+                `<a href="#" onclick='window.open("${url}");return false;'>
+                    <figure>
+                        <img src=${logo} alt="${name}"` + finalLoad + `>
+                        <figcaption>
+                            ${name}
+                        </figcaption>
+                    </figure>
+                </a>`;
+                $("#rec" + (i+1)).html(innerHTML);
+        
+                //stop loading animation
+                clearInterval(window.ellipsisInterval);
+            }
+        }
+        else {
+            //update the completion percentage
+            let percentageHTML = response["load_percent"];
+            $(".percentage").html(percentageHTML);
+
+            //keep checking percentage until the list has finished loading
+            setTimeout(function() {
+                getLoadPercent(url, listSize);
+            }, 100)
+        }
     });
 }
 

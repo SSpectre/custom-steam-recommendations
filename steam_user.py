@@ -4,7 +4,7 @@ import json
 import secret_keys
 from steam_game import SteamGame
 
-class SteamUser:
+class SteamUser(object):
     """Stores information relating to a single Steam user"""
     
     class NoRatingsError(Exception):
@@ -105,8 +105,6 @@ class SteamUser:
                 
         #re-calculate and apply the average tag score using confidence-adjusted values
         self.apply_average_score_to_unknown_tags(score_sum, number_of_scores, scores)
-        
-        print(sorted(self.tag_scores.items(), key=lambda tag: tag[1]))
         
     def apply_average_score_to_unknown_tags(self, score_sum, number_of_scores, scores):
         """Calculate the average of existing scores and apply it to tags with no representation.
