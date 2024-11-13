@@ -125,14 +125,14 @@ function recommendGames(listSize) {
         $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }
 
-    var innerHTML = "";
-    var eInterval = setInterval(function() {
-        if (innerHTML.length > 3)
-            innerHTML = "";
+    let ellipsisHTML = "";
+    let ellipsisInterval = setInterval(function() {
+        if (ellipsisHTML.length > 3)
+            ellipsisHTML = "";
         else
-            innerHTML += ".";
+            ellipsisHTML += ".";
 
-        $(".ellipsis").html(innerHTML);
+        $(".ellipsis").html(ellipsisHTML);
     }, 333);
 
     if ($('.column-switch-button').data('showinglibrary')) {
@@ -142,7 +142,6 @@ function recommendGames(listSize) {
     $.ajax({
         type: "GET",
         url: $('body').data('recommendgames'),
-        contentType: "application/json",
         dataType: 'json',
         success: function(response) {
             for (let i = 0; i < listSize; i++) {
@@ -168,7 +167,7 @@ function recommendGames(listSize) {
                 $("#rec" + (i+1)).html(innerHTML);
 
                 //stop loading animation
-                clearInterval(eInterval);
+                clearInterval(ellipsisInterval);
             }
         },
         error: function(xhr) {

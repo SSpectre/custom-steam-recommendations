@@ -15,6 +15,7 @@ from steam_game import SteamGame
 
 app = Flask(__name__)
 app.teardown_appcontext(db.close_db)
+app.secret_key = secret_keys.SECRET_KEY
 
 SESSION_PERMANENT = False
 SESSION_TYPE = "filesystem"
@@ -236,9 +237,8 @@ def recommend_games():
     unowned_games = valid_ids.difference(owned_set)
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
-
-    
     rec_list = []
+    
     for game in valid_games:
         #apply mature content filters
         allowed = True
