@@ -122,7 +122,7 @@ function recommendGames(listSize) {
 
     //loading animation
     for (let i = 0; i < listSize; i++) {
-        $("#rec" + (i+1)).html(`Calculating (<span class="percentage">0</span>%)<span class="ellipsis"></span>`);
+        $("#rec" + (i+1)).html(`Calculating<span class="ellipsis"></span>`);
     }
 
     let ellipsisHTML = "";
@@ -168,7 +168,6 @@ function recommendGames(listSize) {
 
                 //stop loading animation
                 clearInterval(ellipsisInterval);
-                clearInterval(percentageInterval);
             }
         },
         error: function(xhr) {
@@ -188,20 +187,6 @@ function recommendGames(listSize) {
             }
         },
     });
-
-    let percentageHTML = "";
-    let percentageInterval = setInterval(function() {
-        $.ajax({
-            type: "GET",
-            url: $('body').data('getloadpercent'),
-            dataType: 'json',
-            success: function(response) {
-                percentageHTML = response["load_percent"];
-                console.log(percentageHTML);
-                $(".percentage").html(percentageHTML);
-            }
-        });
-    }, 333);
 }
 
 /** Sends an HTTP request to the server to set all of the user's ratings to null. Set dropdown values to N/A if successful. */

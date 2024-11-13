@@ -42,7 +42,7 @@ def query_limited_api(url, id, threshold):
     while True:
         try:
             print(str(datetime.datetime.now()) + " Requesting " + url + str(id), end = "")
-            response = requests.get(url + str(id), timeout = 60)
+            response = requests.get(url + str(id), timeout = 60, headers={"Content-Type": "application/json"})
             print("...Success")
         except requests.Timeout:
             #don't need to sleep since already waited for timeout
