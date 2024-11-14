@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS user_filter_prefs;
 CREATE TABLE user_games (
 	user_id INTEGER NOT NULL,
 	game_id INTEGER NOT NULL,
+	owned BOOLEAN,
 	rating INTEGER
 );
 

@@ -93,7 +93,7 @@
 						</tr>
 					</thead>
 					<tbody>
-					{% for game in games %}
+					{% for game in owned_games %}
 						<tr>
 							<td>
 								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
@@ -159,9 +159,8 @@
 							<th>Rating</th>
 						</tr>
 					</thead>
-					<!--
 					<tbody>
-					{% for game in games %}
+					{% for game in other_games %}
 						<tr>
 							<td>
 								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
@@ -189,7 +188,6 @@
 						</tr>
 					{% endfor %}
 					</tbody>
-					-->
 				</table>
 			</div>
 		</div>

@@ -18,7 +18,8 @@ class SteamUser:
     def __init__(self, id):
         self.user_id = id
         self.user_name = ""
-        self.user_games = {}
+        self.owned_games = {}
+        self.other_games = {}
         self.tag_scores = {}
         
         """0: unused, exists to align Steam's internal indexing with Python's lists
@@ -33,7 +34,7 @@ class SteamUser:
         self.get_owned_games()
 
     def get_name(self):
-        """Returns account name from ID."""
+        """Sets account name based on ID."""
         response = requests.get("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=" + secret_keys.STEAM_API_KEY + "&steamids=" + str(self.user_id))
         if response.status_code == 200:
             json = response.json()
@@ -48,11 +49,11 @@ class SteamUser:
             
         for game in json['response']['games']:
             new_game = SteamGame(game['appid'], game['name'])
-            self.user_games[game['appid']] = new_game
+            self.owned_games[game['appid']] = new_game
             
     def calculate_tag_scores(self):
         """Creates a dictionary of scores for each tag based on the user's ratings of their games."""
-        if len(self.user_games) == 0:
+        if len(self.owned_games) == 0:
             raise self.NoRatingsError("Please add games to your Steam library.")
         
         #create a dictionary with tags for keys and empty lists for values
@@ -61,8 +62,8 @@ class SteamUser:
         number_of_ratings = 0
         
         #add to the list of ratings given to each game with a given tag
-        for game_id in self.user_games:
-            game = self.user_games[game_id]
+        for game_id in self.owned_games:
+            game = self.owned_games[game_id]
             if game.rating != None:
                 for tag in game.tags:
                     scores[tag].append(game.rating)
