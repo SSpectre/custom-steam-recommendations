@@ -83,7 +83,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<span id="library-column" class="column">
+			<div id="library-column" class="column">
 				<h1>Current Library:</h1>
 				<table id="ownedgames">
 					<thead>
@@ -122,8 +122,8 @@
 					{% endfor %}
 					</tbody>
 				</table>
-			</span>
-			<span id="rec-column" class="column">
+			</div>
+			<div id="rec-column" class="column">
 				<h1>Recommendations:</h1>
 				<table id="recommendations">
 					<thead>
@@ -143,7 +143,55 @@
 						{% endfor %}
 					</tbody>
 				</table>
-			</span>
+			</div>
+		</div>
+		<div class="row">
+			<div id="other-column" class="column">
+				<h2>Played a Steam game on another platform? Add it here:</h2>
+				<form>
+					<input type="text" id="other-text" name="other-text" maxlength="10" placeholder="App ID#">
+					<input type="submit" id="other-button" value="Add">
+				</form>
+				<table id="other-table">
+					<thead>
+						<tr>
+							<th class = "absorbing-column">Game</th>
+							<th>Rating</th>
+						</tr>
+					</thead>
+					<!--
+					<tbody>
+					{% for game in games %}
+						<tr>
+							<td>
+								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
+									<figure>
+										<img src={{game.game_logo_url}} alt="{{game.game_name}}">
+										<figcaption>
+												{{game.game_name}}
+										</figcaption>
+									</figure>
+								</a>
+							</td>
+							<td>
+								<form>
+									<select name="rating" id="{{'rating' ~ loop.index0}}" onchange="assignRating({{game.game_id}}, this.value)">
+										<option value="exclude" selected=>N/A</option>
+										{% for i in range(1, 11) %}
+											<option
+											value="{{i}}"
+											{% if i == game.rating %} selected {% endif %}>
+											{{i}}</option>
+										{% endfor %}
+									</select>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+					-->
+				</table>
+			</div>
 		</div>
 		<script>
 			var buttons = $("#csr-buttons").clone();

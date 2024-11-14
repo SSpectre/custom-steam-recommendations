@@ -254,6 +254,7 @@ function switchColumns() {
         button.data('showinglibrary', "")
 
         $('#library-column').css('display', 'none');
+        $('#other-column').css('display', 'none');
         $('#rec-column').css('display', 'inline-block');
     }
     else {
@@ -261,6 +262,7 @@ function switchColumns() {
         button.data('showinglibrary', "true")
 
         $('#library-column').css('display', 'inline-block');
+        $('#other-column').css('display', 'inline-block');
         $('#rec-column').css('display', 'none');
     }
 
