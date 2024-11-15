@@ -104,13 +104,15 @@ def list_owned_games(user_id):
                                     [steam_user.user_id, game.game_id], True)['rating']
                 game.rating = rating if rating != "NULL" else None
                 
-                #if "owned" is null, it was added to the database prior to the addition of rating unowned games and must be owned
                 game_is_owned = db.query_db("""SELECT owned
                                             FROM """ + USER_GAMES_TABLE +
                                             """ WHERE user_id = ?
                                             AND game_id = ?""",
                                             [steam_user.user_id, game.game_id], True)['owned']
-                if game_is_owned == "NULL":
+                
+                #if "owned" is null, it was added to the database prior to the addition of rating unowned games and must be owned
+                #if it is 0, the game was previously played on another platform before being bought on Steam
+                if game_is_owned is None or game_is_owned == 0:
                     connection = db.get_db()
                     connection.execute("UPDATE " + USER_GAMES_TABLE +
                                         """ SET owned = 1
@@ -118,19 +120,23 @@ def list_owned_games(user_id):
                                         AND game_id = ?""",
                                         [session["steam_user"].user_id, game.game_id])
                     connection.commit()
+                    
             else:
                 add_game_to_db(game.game_id, 1)
                 
-        other_games = db.query_db("""SELECT game_id
+        other_games = db.query_db("""SELECT game_id, rating
                                   FROM """ + USER_GAMES_TABLE +
                                   """ WHERE user_id = ?
                                   AND owned = ?""",
                                   [steam_user.user_id, 0])
         
-        for game_id in other_games:
+        for game in other_games:
+            game_id = game['game_id']
+            rating = game['rating']
+            
             other_game = SteamGame(game_id)
+            other_game.rating = rating if rating != "NULL" else None
             steam_user.other_games[game_id] = other_game
-            add_game_to_db(game_id, 0)
                
         #in case the user doesn't have existing filter preferences
         filters_exist = does_user_record_exist(USER_FILTER_PREFS_TABLE)
@@ -156,7 +162,7 @@ def list_owned_games(user_id):
         add_filter_prefs()
     
     return render_template("owned_games.html", user_name = steam_user.user_name, owned_games = sorted(owned_games, key=lambda game: game.game_name.casefold()),
-                           other_games = sorted(steam_user.other_games, key=lambda game: game.game_name.casefold()),
+                           other_games = sorted(steam_user.other_games.values(), key=lambda game: game.game_name.casefold()),
                            list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters)
     
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
@@ -237,8 +243,14 @@ def add_other_game():
     if app_id in user.owned_games.keys():
         response = {"error_message": "You already own that game!"}
         return make_response(json.dumps(response), 500)
+    elif app_id in user.other_games.keys():
+        response = {"error_message": "You've already added that game!"}
+        return make_response(json.dumps(response), 500)
     elif str(app_id) in list(SteamGame.tag_cache.keys()):
         other_game = SteamGame(app_id)
+        user.other_games[app_id] = other_game
+        add_game_to_db(app_id, 0)
+        
         game_json = other_game.to_json()
         return json.dumps(game_json)
     else:
