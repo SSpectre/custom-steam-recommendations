@@ -8,7 +8,7 @@ function errorMessage() {
  * @param {string} rating - User's rating, either a number or "exclude".
  */
 function assignRating(gameID, rating) {
-    var data = {
+    let data = {
         id: gameID,
         rating: rating
     };
@@ -37,7 +37,7 @@ function changeListSize(size) {
         return;
     }
 
-    var data = {
+    let data = {
         size: size
     };
 
@@ -89,7 +89,7 @@ function changeListSize(size) {
 function updateFilterPref(filterID, value) {
     $(".filter-check-" + filterID).prop('checked', value);
 
-    var data = {
+    let data = {
         filterID: filterID,
         value: value
     };
@@ -105,6 +105,60 @@ function updateFilterPref(filterID, value) {
             $(".filter-check-" + filterID).prop('checked', !value);
             errorMessage();
         }
+    });
+}
+
+function addOtherGame(appID) {
+    let data = {
+        appID: appID
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('addothergame'),
+        contentType: "application/json",
+        dataType: 'json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            let game = JSON.parse(response);
+
+            let url = game.store_url;
+            let logo = game.game_logo_url;
+            let name = game.game_name;
+
+            let game_listing =
+            `<tr>
+                <td>
+                    <a href="#" onclick='window.open("` + url + `"); return false;'>
+                        <figure>
+                            <img src=` + logo + ` alt="` + name + `}}">
+                            <figcaption>
+                                    ` + name + `
+                            </figcaption>
+                        </figure>
+                    </a>
+                </td>
+                <td>
+                    <form>
+                        <select name="rating" >
+                            <option value="exclude" selected=>N/A</option>
+                        </select>
+                    </form>
+                </td>
+            </tr>`;
+
+            $("#other-table-body").append(game_listing);
+        },
+        error: function(xhr) {
+            let message = JSON.parse(xhr.responseText)["error_message"];
+
+            if (message) {
+                alert(message);
+            }
+            else {
+                errorMessage();
+            }
+        },
     });
 }
 
@@ -198,8 +252,8 @@ function clearRatings() {
             success: function() {
                 let i = 0;
                 while (true) {
-                    id = "#rating" + i;
-                    rating = $(id);
+                    let id = "#rating" + i;
+                    let rating = $(id);
 
                     if (rating.length) {
                         if (rating.val() != "exclude"){

@@ -24,7 +24,7 @@ class SteamGame:
             response = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(self.game_id))
             if response.status_code == 200:
                 json = response.json()
-                self.game_name = json['response']['name']
+                self.game_name = json['name']
         else:
             self.game_name = name
         

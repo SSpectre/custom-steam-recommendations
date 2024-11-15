@@ -187,9 +187,14 @@ select {
     height: 2.067em;
 }
 
+#other-span {
+    display: table;
+    margin: 0 auto;
+}
+
 input[type=text],
 input[type=text]:focus,
-input[type=submit] {
+#other-button {
     font-size: 24px;
     width: 120px;
     margin: 0 0.67em 0.67em 0.67em;
@@ -204,6 +209,10 @@ input[type=text] {
 input[type=text]:focus {
     border: 1px solid #444;
     border-bottom: 2px solid #444;
+}
+
+#other-button {
+    box-sizing: content-box;
 }
 
 
@@ -221,13 +230,13 @@ input[type=text]:focus {
     select,
     input[type=text],
     input[type=text]:focus,
-    input[type=submit] {
+    #other-button {
         font-size: 18px;
     }
 
     input[type=text],
     input[type=text]:focus,
-    input[type=submit] {
+    #other-button {
         width: 100px;
     }
 }
@@ -250,14 +259,14 @@ input[type=text]:focus {
     select,
     input[type=text],
     input[type=text]:focus,
-    input[type=submit] {
+    #other-button {
         font-size: 15px;
         letter-spacing: 0;
     }
 
     input[type=text],
     input[type=text]:focus,
-    input[type=submit] {
+    #other-button {
         width: 80px;
     }
 

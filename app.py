@@ -228,6 +228,23 @@ def change_list_size():
     
     return response
 
+@app.route(URL_ROOT + "add_other_game", methods=['POST'])
+def add_other_game():
+    user = session["steam_user"]
+    data = request.get_json()
+    app_id = int(data['appID'])
+    
+    if app_id in user.owned_games.keys():
+        response = {"error_message": "You already own that game!"}
+        return make_response(json.dumps(response), 500)
+    elif str(app_id) in list(SteamGame.tag_cache.keys()):
+        other_game = SteamGame(app_id)
+        game_json = other_game.to_json()
+        return json.dumps(game_json)
+    else:
+        response = {"error_message": "App IDs must be for valid standalone games."}
+        return make_response(json.dumps(response), 500)
+
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
     """Constructs the recommendation list."""
