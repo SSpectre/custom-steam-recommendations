@@ -124,6 +124,7 @@ def list_owned_games(user_id):
             else:
                 add_game_to_db(game.game_id, 1)
                 
+        #non-Steam games can't be found with an API call and require a database query
         other_games = db.query_db("""SELECT game_id, rating
                                   FROM """ + USER_GAMES_TABLE +
                                   """ WHERE user_id = ?
@@ -212,6 +213,8 @@ def clear_ratings():
     user = session["steam_user"]
     for game_id in user.owned_games:
         user.owned_games[game_id].rating = None
+    for game_id in user.other_games:
+        user.other_games[game_id].rating = None
         
     connection = db.get_db()
     connection.execute("UPDATE " + USER_GAMES_TABLE +
@@ -236,6 +239,7 @@ def change_list_size():
 
 @app.route(URL_ROOT + "add_other_game", methods=['POST'])
 def add_other_game():
+    """Associates a non-Steam game with the user. Returns the added game object as JSON."""
     user = session["steam_user"]
     data = request.get_json()
     app_id = int(data['appID'])
@@ -295,9 +299,13 @@ def recommend_games():
     
     #filter out already owned games
     owned_set = set(str(key) for key in steam_user.owned_games.keys())
-    unowned_games = valid_ids.difference(owned_set)
+    unplayed_games = valid_ids.difference(owned_set)
+    
+    #filter out added non-Steam games
+    other_set = set(str(key) for key in steam_user.other_games.keys())
+    unplayed_games = unplayed_games.difference(other_set)
 
-    valid_games = [SteamGame(id, all_apps[id]) for id in unowned_games]
+    valid_games = [SteamGame(id, all_apps[id]) for id in unplayed_games]
     rec_list = []
     
     for game in valid_games:

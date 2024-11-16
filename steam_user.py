@@ -53,8 +53,8 @@ class SteamUser:
             
     def calculate_tag_scores(self):
         """Creates a dictionary of scores for each tag based on the user's ratings of their games."""
-        if len(self.owned_games) == 0:
-            raise self.NoRatingsError("Please add games to your Steam library.")
+        if len(self.owned_games) == 0 and len(self.other_games) == 0:
+            raise self.NoRatingsError("Please add games to your Steam library or add games you've played on other platforms.")
         
         #create a dictionary with tags for keys and empty lists for values
         scores = {tag: [] for tag in SteamUser.tag_set}
@@ -64,6 +64,12 @@ class SteamUser:
         #add to the list of ratings given to each game with a given tag
         for game_id in self.owned_games:
             game = self.owned_games[game_id]
+            if game.rating != None:
+                for tag in game.tags:
+                    scores[tag].append(game.rating)
+                number_of_ratings += 1
+        for game_id in self.other_games:
+            game = self.other_games[game_id]
             if game.rating != None:
                 for tag in game.tags:
                     scores[tag].append(game.rating)

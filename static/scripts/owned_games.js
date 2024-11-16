@@ -108,6 +108,9 @@ function updateFilterPref(filterID, value) {
     });
 }
 
+/** Sends an HTTP request to the server to add a non-Steam game to the user's list.
+ * @param {number} appID 
+ */
 function addOtherGame(appID) {
     let data = {
         appID: appID
@@ -122,10 +125,34 @@ function addOtherGame(appID) {
         success: function(response) {
             let game = JSON.parse(response);
 
+            let id = game.game_id
             let url = game.store_url;
             let logo = game.game_logo_url;
             let name = game.game_name;
 
+            //find the current number of added games and set the new element's id to 1 higher
+            let i = 0;
+                while (true) {
+                    let id = "#other-rating" + i;
+                    let rating = $(id);
+
+                    if (rating.length == 0) {
+                        break;
+                    }
+                    i++;
+                }
+
+            let new_rating = i;
+            let selectID = "other-rating" + new_rating;
+
+            //for populating the rating dropdown
+            let ratingOptions = "";
+            for (let i = 1; i < 11; i++) {
+                let option = "<option>" + i + "</option>"
+                ratingOptions = ratingOptions + option;
+            }
+
+            //add the game to the non-Steam games table
             let game_listing =
             `<tr>
                 <td>
@@ -140,8 +167,8 @@ function addOtherGame(appID) {
                 </td>
                 <td>
                     <form>
-                        <select name="rating" >
-                            <option value="exclude" selected=>N/A</option>
+                        <select name="rating" id="` + selectID + `" onchange="assignRating(` + id + `, this.value)">
+                            <option value="exclude" selected=>N/A</option>` + ratingOptions + `
                         </select>
                     </form>
                 </td>
@@ -160,6 +187,9 @@ function addOtherGame(appID) {
             }
         },
     });
+
+    //clear the input textbox
+    $("#other-text").val("");
 }
 
 /** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
@@ -262,6 +292,23 @@ function clearRatings() {
                     }
                     else {
                         //reached the end of user's library
+                        break;
+                    }
+                    i++;
+                }
+
+                i = 0;
+                while (true) {
+                    let id = "#other-rating" + i;
+                    let rating = $(id);
+
+                    if (rating.length) {
+                        if (rating.val() != "exclude"){
+                            rating.val("exclude");
+                        }
+                    }
+                    else {
+                        //reached the end of user's additional games
                         break;
                     }
                     i++;
