@@ -29,9 +29,9 @@ class SteamGame:
                     response_json = response.json()
                     self.game_name = response_json['name']
                 except requests.exceptions.JSONDecodeError:
-                    self.game_name = "[Name not found in Steam Spy API]"
+                    self.game_name = "[Name not found]"
             else:
-                self.game_name = "[Name not found in Steam Spy API]"
+                self.game_name = "[Name not found]"
         else:
             self.game_name = name
         
