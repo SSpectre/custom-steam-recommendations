@@ -175,6 +175,9 @@ function addOtherGame(appID) {
             </tr>`;
 
             $("#other-table-body").append(game_listing);
+
+            //resize iframe
+            loadComplete();
         },
         error: function(xhr) {
             let message = JSON.parse(xhr.responseText)["error_message"];

@@ -24,8 +24,8 @@ function confirmLogin() {
                 });
 
                 //loading animation
-                var innerHTML = "";
-                var eInterval = setInterval(function() {
+                let innerHTML = "";
+                let eInterval = setInterval(function() {
                     if (innerHTML.length > 3)
                         innerHTML = "";
                     else

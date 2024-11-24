@@ -55,7 +55,7 @@ def query_limited_api(url, id, threshold):
         if response.status_code == 200:
             try:
                 result = response.json()
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, requests.exceptions.JSONDecodeError):
                 if should_retry(5, 0): continue
                 else: break
         elif response.status_code == 429:
