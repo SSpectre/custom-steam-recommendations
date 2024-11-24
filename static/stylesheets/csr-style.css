@@ -29,7 +29,17 @@ p {
 }
 
 h1 {
+    font-size: 36px;
     margin-inline: 0.3em;
+    word-wrap: normal;
+    white-space: normal;
+}
+
+h2 {
+    font-size: 30px;
+    margin-inline: 0.3em;
+    word-wrap: normal;
+    white-space: normal;
 }
 
 #csr-buttons {
@@ -60,11 +70,13 @@ h1 {
     float: right;
 }
 
-button.align-left {
+button.align-left,
+#other-button {
     background: linear-gradient(to bottom, #a4d007 5%, #536904 95%);
 }
 
-button.align-left:hover {
+button.align-left:hover,
+#other-button:hover {
     background: linear-gradient(to bottom, #b6d908 5%, #80a006 95%);
     color: #fff;
 }
@@ -97,18 +109,6 @@ details > p {
 
 .checkbox > label {
     margin: auto 0.5em;
-}
-
-h1 {
-    font-size: 36px;
-}
-
-h2 {
-    font-size: 30px;
-}
-
-h3 {
-    letter-spacing: 0;
 }
 
 table {
@@ -187,6 +187,35 @@ select {
     height: 2.067em;
 }
 
+#other-span {
+    display: table;
+    margin: 0 auto;
+}
+
+input[type=text],
+input[type=text]:focus,
+#other-button {
+    font-size: 24px;
+    width: 120px;
+    margin: 0 0.67em 0.67em 0.67em;
+}
+
+input[type=text] {
+    border: 1px solid #aaa;
+    border-bottom: 2px solid #aaa;
+    border-radius: 2px;
+}
+
+input[type=text]:focus {
+    border: 1px solid #444;
+    border-bottom: 2px solid #444;
+}
+
+#other-button {
+    box-sizing: content-box;
+}
+
+
 @media (max-width: 900px) {
     h1 {
         font-size: 30px;
@@ -198,8 +227,17 @@ select {
 
     th,
     td,
-    select {
+    select,
+    input[type=text],
+    input[type=text]:focus,
+    #other-button {
         font-size: 18px;
+    }
+
+    input[type=text],
+    input[type=text]:focus,
+    #other-button {
+        width: 100px;
     }
 }
 
@@ -218,9 +256,18 @@ select {
 
     th,
     td,
-    select {
+    select,
+    input[type=text],
+    input[type=text]:focus,
+    #other-button {
         font-size: 15px;
         letter-spacing: 0;
+    }
+
+    input[type=text],
+    input[type=text]:focus,
+    #other-button {
+        width: 80px;
     }
 
     figure img {

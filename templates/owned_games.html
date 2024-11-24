@@ -10,8 +10,8 @@
 		<link rel="stylesheet" media="print" onload="this.onload=null;this.media='all';" id="ao_optimized_gfonts" href="https://fonts.googleapis.com/css?family=Ubuntu%7CUbuntu%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic%7CLato:400,300italic,700,700i%7CSource+Sans+Pro:400,400italic&#038;subset=greek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic%2Cgreek%2Clatin%2Cgreek-ext%2Cvietnamese%2Ccyrillic-ext%2Clatin-ext%2Ccyrillic&amp;display=swap">
 	</head>
 	<body id="csr-body" onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-changelistsize="{{url_for('change_list_size')}}"
-		data-updatefilterpref="{{url_for('update_filter_pref')}}" data-recommendgames="{{url_for('recommend_games')}}" data-clearratings="{{url_for('clear_ratings')}}"
-		data-deleteuser="{{url_for('delete_user')}}" data-logout="{{url_for('logout')}}">
+		data-updatefilterpref="{{url_for('update_filter_pref')}}" data-addothergame="{{url_for('add_other_game')}}" data-recommendgames="{{url_for('recommend_games')}}"
+		data-clearratings="{{url_for('clear_ratings')}}" data-deleteuser="{{url_for('delete_user')}}" data-logout="{{url_for('logout')}}">
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
 			<span id="left-buttons">
@@ -47,7 +47,7 @@
 			<br>
 			<div class="align-left">
 				<details>
-					<summary>Mature Content Filters</summary>
+					<summary onclick="loadComplete()">Mature Content Filters</summary>
 					<p>Recommend games featuring:</p>
 					{% set mature_value = 5 %}
 					{% set violence_value = 2 %}
@@ -83,7 +83,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<span id="library-column" class="column">
+			<div id="library-column" class="column">
 				<h1>Current Library:</h1>
 				<table id="ownedgames">
 					<thead>
@@ -93,7 +93,7 @@
 						</tr>
 					</thead>
 					<tbody>
-					{% for game in games %}
+					{% for game in owned_games %}
 						<tr>
 							<td>
 								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
@@ -122,8 +122,8 @@
 					{% endfor %}
 					</tbody>
 				</table>
-			</span>
-			<span id="rec-column" class="column">
+			</div>
+			<div id="rec-column" class="column">
 				<h1>Recommendations:</h1>
 				<table id="recommendations">
 					<thead>
@@ -143,10 +143,56 @@
 						{% endfor %}
 					</tbody>
 				</table>
-			</span>
+			</div>
+		</div>
+		<div class="row">
+			<div id="other-column" class="column">
+				<h2>Played a Steam game on another platform? Add it here:</h2>
+				<span id="other-span">
+					<input type="text" id="other-text" name="other-text" maxlength="10" placeholder="App ID#">
+					<button type="button" id="other-button" onclick="addOtherGame(document.getElementById('other-text').value)">Add</button>
+				</span>
+				<table id="other-table">
+					<thead>
+						<tr>
+							<th class = "absorbing-column">Game</th>
+							<th>Rating</th>
+						</tr>
+					</thead>
+					<tbody id="other-table-body">
+					{% for game in other_games %}
+						<tr>
+							<td>
+								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
+									<figure>
+										<img src={{game.game_logo_url}} alt="{{game.game_name}}">
+										<figcaption>
+												{{game.game_name}}
+										</figcaption>
+									</figure>
+								</a>
+							</td>
+							<td>
+								<form>
+									<select name="rating" id="{{'other-rating' ~ loop.index0}}" onchange="assignRating({{game.game_id}}, this.value)">
+										<option value="exclude" selected=>N/A</option>
+										{% for i in range(1, 11) %}
+											<option
+											value="{{i}}"
+											{% if i == game.rating %} selected {% endif %}>
+											{{i}}</option>
+										{% endfor %}
+									</select>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		</div>
 		<script>
-			var buttons = $("#csr-buttons").clone();
+			let buttons = $("#csr-buttons").clone();
 			$("#csr-body").append(buttons);
 		</script>
 	</body>

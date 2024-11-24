@@ -8,7 +8,7 @@ function errorMessage() {
  * @param {string} rating - User's rating, either a number or "exclude".
  */
 function assignRating(gameID, rating) {
-    var data = {
+    let data = {
         id: gameID,
         rating: rating
     };
@@ -37,7 +37,7 @@ function changeListSize(size) {
         return;
     }
 
-    var data = {
+    let data = {
         size: size
     };
 
@@ -89,7 +89,7 @@ function changeListSize(size) {
 function updateFilterPref(filterID, value) {
     $(".filter-check-" + filterID).prop('checked', value);
 
-    var data = {
+    let data = {
         filterID: filterID,
         value: value
     };
@@ -106,6 +106,93 @@ function updateFilterPref(filterID, value) {
             errorMessage();
         }
     });
+}
+
+/** Sends an HTTP request to the server to add a non-Steam game to the user's list.
+ * @param {number} appID 
+ */
+function addOtherGame(appID) {
+    let data = {
+        appID: appID
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('addothergame'),
+        contentType: "application/json",
+        dataType: 'json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            let game = JSON.parse(response);
+
+            let id = game.game_id
+            let url = game.store_url;
+            let logo = game.game_logo_url;
+            let name = game.game_name;
+
+            //find the current number of added games and set the new element's id to 1 higher
+            let i = 0;
+                while (true) {
+                    let id = "#other-rating" + i;
+                    let rating = $(id);
+
+                    if (rating.length == 0) {
+                        break;
+                    }
+                    i++;
+                }
+
+            let new_rating = i;
+            let selectID = "other-rating" + new_rating;
+
+            //for populating the rating dropdown
+            let ratingOptions = "";
+            for (let i = 1; i < 11; i++) {
+                let option = "<option>" + i + "</option>"
+                ratingOptions = ratingOptions + option;
+            }
+
+            //add the game to the non-Steam games table
+            let game_listing =
+            `<tr>
+                <td>
+                    <a href="#" onclick='window.open("` + url + `"); return false;'>
+                        <figure>
+                            <img src=` + logo + ` alt="` + name + `}}">
+                            <figcaption>
+                                    ` + name + `
+                            </figcaption>
+                        </figure>
+                    </a>
+                </td>
+                <td>
+                    <form>
+                        <select name="rating" id="` + selectID + `" onchange="assignRating(` + id + `, this.value)">
+                            <option value="exclude" selected=>N/A</option>` + ratingOptions + `
+                        </select>
+                    </form>
+                </td>
+            </tr>`;
+
+            $("#other-table-body").append(game_listing);
+
+            //resize iframe
+            loadComplete();
+        },
+        error: function(xhr) {
+            let message = JSON.parse(xhr.responseText)["error_message"];
+
+            if (message) {
+                alert(message);
+            }
+            else {
+                errorMessage();
+            }
+        },
+    });
+
+    //clear the input textbox
+    $("#other-text").val("");
 }
 
 /** Sends an HTTP request to the server to calculate recommended games. Draws the list if successful.
@@ -197,8 +284,8 @@ function clearRatings() {
             success: function() {
                 let i = 0;
                 while (true) {
-                    id = "#rating" + i;
-                    rating = $(id);
+                    let id = "#rating" + i;
+                    let rating = $(id);
 
                     if (rating.length) {
                         if (rating.val() != "exclude"){
@@ -207,6 +294,23 @@ function clearRatings() {
                     }
                     else {
                         //reached the end of user's library
+                        break;
+                    }
+                    i++;
+                }
+
+                i = 0;
+                while (true) {
+                    let id = "#other-rating" + i;
+                    let rating = $(id);
+
+                    if (rating.length) {
+                        if (rating.val() != "exclude"){
+                            rating.val("exclude");
+                        }
+                    }
+                    else {
+                        //reached the end of user's additional games
                         break;
                     }
                     i++;
@@ -253,6 +357,7 @@ function switchColumns() {
         button.data('showinglibrary', "")
 
         $('#library-column').css('display', 'none');
+        $('#other-column').css('display', 'none');
         $('#rec-column').css('display', 'inline-block');
     }
     else {
@@ -260,6 +365,7 @@ function switchColumns() {
         button.data('showinglibrary', "true")
 
         $('#library-column').css('display', 'inline-block');
+        $('#other-column').css('display', 'inline-block');
         $('#rec-column').css('display', 'none');
     }
 
