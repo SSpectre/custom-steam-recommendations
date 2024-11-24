@@ -23,8 +23,15 @@ class SteamGame:
         if name is None:
             response = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(self.game_id))
             if response.status_code == 200:
-                json = response.json()
-                self.game_name = json['name']
+                #Steam Spy API occasionally returns a "too many connections" error with a 200 status
+                #it's out of my control when this happens, but it seems to be temporary
+                try:
+                    response_json = response.json()
+                    self.game_name = response_json['name']
+                except requests.exceptions.JSONDecodeError:
+                    self.game_name = "[Name not found in Steam Spy API]"
+            else:
+                self.game_name = "[Name not found in Steam Spy API]"
         else:
             self.game_name = name
         
