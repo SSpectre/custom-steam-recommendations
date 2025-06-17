@@ -42,18 +42,16 @@ class SteamUser:
         
         if response.status_code == 200:
             json = response.json()
-            
-        self.user_name = json['response']['players'][0]['personaname']
+            self.user_name = json['response']['players'][0]['personaname']
         
     def get_owned_games(self):
         """Creates a dictionary of games owned by the user, with app IDs as keys."""
         response = requests.get("https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=" + secret_keys.STEAM_API_KEY + "&steamid=" + str(self.user_id) + "&include_appinfo=true&include_played_free_games=true&format=json")
         if response.status_code == 200:
             json = response.json()
-            
-        for game in json['response']['games']:
-            new_game = SteamGame(game['appid'], game['name'])
-            self.owned_games[game['appid']] = new_game
+            for game in json['response']['games']:
+                new_game = SteamGame(game['appid'], game['name'])
+                self.owned_games[game['appid']] = new_game
             
     def calculate_tag_scores(self):
         """Creates a dictionary of scores for each tag based on the user's ratings of their games."""
