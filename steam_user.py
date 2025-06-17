@@ -39,6 +39,7 @@ class SteamUser:
         print(request)
         response = requests.get(request)
         print(response)
+        print("something to the logs")
         
         if response.status_code == 200:
             json = response.json()
