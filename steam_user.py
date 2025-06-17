@@ -35,7 +35,11 @@ class SteamUser:
 
     def get_name(self):
         """Sets account name based on ID."""
-        response = requests.get("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=" + secret_keys.STEAM_API_KEY + "&steamids=" + str(self.user_id))
+        request = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=" + secret_keys.STEAM_API_KEY + "&steamids=" + str(self.user_id)
+        print(request)
+        response = requests.get(request)
+        print(response)
+        
         if response.status_code == 200:
             json = response.json()
             
