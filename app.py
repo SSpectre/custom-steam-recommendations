@@ -284,8 +284,12 @@ def recommend_games():
         all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&last_appid=" + str(all_json['response']['last_appid']) + "&max_results=50000")
         all_json = all_response.json()
         
-        for app in all_json['response']['apps']:
-            all_apps[str(app['appid'])] = app['name']
+        try:
+            for app in all_json['response']['apps']:
+                all_apps[str(app['appid'])] = app['name']
+        except KeyError as e:
+            response = {"error_message": str(e)}
+            return make_response(json.dumps(response), 500)
         
     #filter out possible duplicates
     app_set = set(all_apps.keys())
