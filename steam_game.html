@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module steam_game</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>steam_game</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:d%3A%5Clibraries%5Cdocuments%5Cpython%20projects%5Ccustom-steam-recommendations%5Csteam_game.py">d:\libraries\documents\python projects\custom-steam-recommendations\steam_game.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="json.html">json</a><br>
+</td><td width="25%" valign=top><a href="requests.html">requests</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="steam_game.html#SteamGame">SteamGame</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SteamGame">class <strong>SteamGame</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#SteamGame">SteamGame</a>(id,&nbsp;name=None)<br>
+&nbsp;<br>
+Stores&nbsp;information&nbsp;relating&nbsp;to&nbsp;a&nbsp;single&nbsp;Steam&nbsp;game&nbsp;and&nbsp;provides&nbsp;access&nbsp;to&nbsp;the&nbsp;tag&nbsp;cache.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SteamGame-__init__"><strong>__init__</strong></a>(self, id, name=None)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="SteamGame-calculate_rec_score"><strong>calculate_rec_score</strong></a>(self, tag_scores)</dt><dd><tt>Calculates&nbsp;the&nbsp;game's&nbsp;recommendation&nbsp;score&nbsp;based&nbsp;on&nbsp;its&nbsp;tags&nbsp;and&nbsp;the&nbsp;user's&nbsp;tag&nbsp;scores<br>
+&nbsp;<br>
+:param&nbsp;tag_scores:&nbsp;The&nbsp;user's&nbsp;scores&nbsp;for&nbsp;each&nbsp;tag&nbsp;based&nbsp;on&nbsp;their&nbsp;ratings</tt></dd></dl>
+
+<dl><dt><a name="SteamGame-to_json"><strong>to_json</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>TARGET_TAGS</strong> = 20</dl>
+
+<dl><dt><strong>flag_cache</strong> = {'10': [2, 5], '1000000': [], '1000010': [], '1000030': [], '1000040': [], '1000080': [], '1000100': [], '1000110': [], '1000130': [], '1000280': [], ...}</dl>
+
+<dl><dt><strong>flag_file</strong> = &lt;_io.TextIOWrapper name='content_flags.json' mode='r' encoding='cp1252'&gt;</dl>
+
+<dl><dt><strong>tag_cache</strong> = {'10': ['Action', 'FPS', 'Multiplayer', 'Shooter', 'Classic', 'Team-Based', 'First-Person', 'Competitive', 'Tactical', "1990's", 'e-sports', 'PvP', 'Old School', 'Military', 'Strategy', 'Survival', 'Score Attack', '1980s', 'Assassin', 'Nostalgia'], '1000000': ["Shoot 'Em Up", 'Metroidvania', 'Bullet Hell', 'Side Scroller', 'Twin Stick Shooter', 'Difficult', 'Shooter', '2D', 'Controller', 'Action', 'Minimalist', 'Colorful', 'Abstract', 'Robots', 'Atmospheric', 'Adventure', 'Singleplayer', 'Indie', 'GameMaker', 'Great Soundtrack'], '1000010': ['Rogue-like', 'Turn-Based Combat', 'RPG', 'Perma Death', 'Dungeon Crawler', 'Rogue-lite', 'Strategy', 'Adventure', 'Turn-Based', 'Female Protagonist', 'Turn-Based Strategy', 'Singleplayer', '2D', 'Replay Value', 'Difficult', 'Tactical', 'Fantasy', 'Action-Adventure', 'Top-Down', 'Magic'], '1000030': ['Typing', 'Management', 'Difficult', 'Casual', 'Arcade', 'Strategy', '2D', 'Funny', 'Simulation', 'Co-op', 'Comedy', 'Family Friendly', 'Action', 'Local Co-Op', 'Multiplayer', 'Local Multiplayer', 'Cooking', 'Singleplayer', 'Co-op Campaign', 'Fast-Paced'], '1000040': ['Action', 'Casual', 'Indie', 'Simulation'], '1000080': ['Action', 'Indie', 'RPG', 'Adventure', 'Action Roguelike', 'Anime', 'Action RPG', 'Rogue-lite', 'Multiplayer', 'Hack and Slash', 'Rogue-like', 'Linear', 'Singleplayer', 'Online Co-Op', 'Female Protagonist', 'Early Access', 'Co-op', 'Sexual Content', 'Casual', 'JRPG'], '1000100': ['Strategy', 'Adventure', 'RPG', 'Indie', 'Anime', 'Dating Sim'], '1000110': ['Free to Play', 'Massively Multiplayer', 'Action', 'Casual', 'Adventure'], '1000130': ['Indie', 'Casual', 'Tower Defense', 'Sandbox', 'Strategy', 'Action', 'Colorful'], '1000280': ['Sexual Content', 'Mature', 'Female Protagonist', 'LGBTQ+', 'JRPG', 'CRPG', 'MOBA', 'Word Game', 'Turn-Based Strategy', 'RPG', '2D', 'Underground', 'Story Rich', 'Turn-Based Combat', 'Multiple Endings', 'Anime', 'Drama', 'Cartoon', 'Singleplayer', 'Indie'], ...}</dl>
+
+<dl><dt><strong>tag_file</strong> = &lt;_io.TextIOWrapper name='tags.json' mode='r' encoding='cp1252'&gt;</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
