@@ -57,7 +57,11 @@ class SteamGame:
         return json.dumps(self, default=lambda o: o.__dict__)
         
     def calculate_rec_score(self, tag_scores):
-        """Calculates the game's recommendation score based on its tags and the user's tag scores"""
+        """
+        Calculates the game's recommendation score based on its tags and the user's tag scores
+        
+        :param tag_scores: The user's scores for each tag based on their ratings
+        """
         for tag in self.tags:
             self.rec_score += tag_scores[tag]
             

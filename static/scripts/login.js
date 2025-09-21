@@ -1,4 +1,6 @@
-/** Sends an HTTP request to the server to confirm if the user logged in with Steam. Draws loading message and begins constructing the user's library if successful. */
+/**
+ * Sends an HTTP request to the server to confirm if the user logged in with Steam. Draws loading message and begins constructing the user's library if successful.
+ * */
 function confirmLogin() {
     $.ajax({
         type: "GET",
