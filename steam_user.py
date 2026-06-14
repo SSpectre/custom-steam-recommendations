@@ -66,7 +66,9 @@ class SteamUser:
             game = self.owned_games[game_id]
             if game.rating != None:
                 for tag in game.tags:
+                    print(tag);
                     scores[tag].append(game.rating)
+                    print(str(scores[tag]));
                 number_of_ratings += 1
         for game_id in self.other_games:
             game = self.other_games[game_id]
@@ -87,7 +89,7 @@ class SteamUser:
                 self.tag_scores[tag] = round(sum(scores[tag]) / len(scores[tag]), 4)
                 score_sum += self.tag_scores[tag]
                 number_of_scores += 1
-                
+        
         score_avg = self.apply_average_score_to_unknown_tags(score_sum, number_of_scores, scores)
                 
         #reset sum, since average will need to be re-calculated
