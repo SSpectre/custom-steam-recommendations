@@ -64,7 +64,9 @@ class SteamUser:
         #add to the list of ratings given to each game with a given tag
         for game_id in self.owned_games:
             game = self.owned_games[game_id]
+            print(game.game_name);
             if game.rating != None:
+                print(str(game.tags));
                 for tag in game.tags:
                     print(tag);
                     scores[tag].append(game.rating)
