@@ -1,4 +1,6 @@
-/** General, all-purpose error message. */
+/**
+ * General, all-purpose error message.
+ * */
 function errorMessage() {
     alert("Something went wrong. Please try logging in again or try again later.");
 }
@@ -258,12 +260,13 @@ function recommendGames(listSize) {
             }
         },
         error: function(xhr) {
-            try {
-                //error message for when there are no games/ratings
-                let message = JSON.parse(xhr.responseText)["error_message"];
+            let message = JSON.parse(xhr.responseText)["error_message"];
+
+            //message only exists if the user has no games/ratings
+            if (message) {
                 alert(message);
             }
-            catch(err) {
+            else {
                 errorMessage();
             }
 
