@@ -46,6 +46,10 @@
 			</span>
 			<br>
 			<div class="align-left">
+				<div class="checkbox">
+					<input type="checkbox" id="ea-check" class="filter-check-{{ea_value}}" name="ea-check">
+					<label for="ea-check"> Early Access</label>
+				</div>
 				<details>
 					<summary onclick="loadComplete()">Mature Content Filters</summary>
 					<p>Recommend games featuring:</p>
@@ -77,7 +81,7 @@
 					<div class="checkbox">
 						<input type="checkbox" id="hardcore-check" class="filter-check-{{hardcore_value}}" name="hardcore-check" value="{{hardcore_check}}"
 							onclick="updateFilterPref({{hardcore_value}}, this.checked)" {% if filter_prefs[hardcore_value] %} checked {% endif %}>
-					<label for="hardcore-check"> Adult Only Sexual Content</label>
+						<label for="hardcore-check"> Adult Only Sexual Content</label>
 					</div>
 				</details>
 			</div>

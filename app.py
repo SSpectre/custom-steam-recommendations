@@ -1,5 +1,6 @@
 import requests
 import json
+import math
 
 from flask import Flask, redirect, request, url_for, render_template, session, make_response
 from flask_cors import CORS
@@ -318,6 +319,10 @@ def recommend_games():
             if steam_user.content_filters[flag] == 0:
                 allowed = False
                 break
+            
+        cutoff = (223961 / 12500) * math.exp((-11 * game.reviews['total']) / 12500) + 82.1
+        if cutoff > game.reviews['recommended']:
+            allowed = False
             
         if allowed:
             #construct recommendation list 

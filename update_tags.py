@@ -12,6 +12,8 @@ app_ids = []
 game_tag_dict = { }
 tag_set = set()
 content_flag_dict = { }
+reviews_dict = { }
+ea_dict = { }
 
 #for determining overall time taken by the script
 start_time = time.time()
@@ -119,7 +121,23 @@ for id in id_set:
             #add game and its content flags to cache
             content_flag_dict[id] = type_data['content_descriptors']['ids']
             
-            print(str(datetime.datetime.now()) + " Valid")
+            #add game's user review info to cache
+            reviews = { }
+            reviews['positive'] = tag_json['positive']
+            reviews['negative'] = tag_json['negative']
+            reviews['total'] = reviews['positive'] + reviews['negative']
+            reviews['recommended'] = 0
+            if reviews['total'] > 0:
+                reviews['recommended'] = round((reviews['positive'] / reviews['total'] * 100), 2)
+            reviews_dict[id] = reviews
+            
+            #add game's early access status to cache
+            if "Early Access" in tag_json['genre']:
+                ea_dict[id] = True
+            else:
+                ea_dict[id] = False
+            
+            print(str(datetime.datetime.now()) + ": " + str(reviews_dict[id]['recommended']) + " (" + str(reviews_dict[id]['total']) + "), " + str(ea_dict[id]) + ", Valid")
         else:
             raise NotGameError("Not a game")
     except (TypeError, KeyError, NotGameError, AttributeError):
@@ -133,6 +151,12 @@ with open('tag_set.json', 'w') as set_file:
     
 with open('content_flags.json', 'w') as flags_file:
     json.dump(content_flag_dict, flags_file)
+    
+with open ('reviews.json', 'w') as reviews_file:
+    json.dump(reviews_dict, reviews_file)
+    
+with open ('ea.json', 'w') as ea_file:
+    json.dump(ea_dict, ea_file)
     
 elapsed_time = time.time() - start_time
     
