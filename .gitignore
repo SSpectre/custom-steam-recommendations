@@ -174,3 +174,4 @@ run-flask.sh
 
 .vscode/
 flask_session/
+improvements/
