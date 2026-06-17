@@ -66,9 +66,7 @@ class SteamUser:
             game = self.owned_games[game_id]
             if game.rating != None:
                 for tag in game.tags:
-                    print(tag);
                     scores[tag].append(game.rating)
-                    print(str(scores[tag]));
                 number_of_ratings += 1
         for game_id in self.other_games:
             game = self.other_games[game_id]
