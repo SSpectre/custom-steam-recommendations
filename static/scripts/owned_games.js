@@ -108,6 +108,30 @@ function updateFilterPref(filterID, value) {
     });
 }
 
+/** Sends an HTTP request to the server to update the user's Early Access preference in the database.
+ * @param {boolean} value - Whether or not Early Access games are allowed to be recommended.
+ */
+function updateEAPref(value) {
+    $(".ea-check").prop('checked', value);
+
+    let data = {
+        value: value
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('updateeapref'),
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        dataType: 'json',
+        error: function() {
+            //revert clicked checkboxes
+            $(".ea-check").prop('checked', !value);
+            errorMessage();
+        }
+    });
+}
+
 /** Sends an HTTP request to the server to add a non-Steam game to the user's list.
  * @param {number} appID 
  */

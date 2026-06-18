@@ -13,7 +13,7 @@ function confirmLogin() {
                 return;
             }
             
-            if (json["user_id"]) {
+            if (json["user_id"] && !json["logging_in"]) {
                 //draw loading message
                 $("#login-button").hide();
                 $("#center-content").empty();
@@ -25,7 +25,6 @@ function confirmLogin() {
                     type: "resizeFrame"
                 });
 
-                //loading animation
                 let innerHTML = "";
                 let eInterval = setInterval(function() {
                     if (innerHTML.length > 3)
