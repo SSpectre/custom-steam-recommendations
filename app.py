@@ -350,11 +350,11 @@ def recommend_games():
                 break
             
         #apply early access filter
-        """ if allowed:
+        if allowed:
             allowed = not (game.ea and steam_user.include_ea == 0)
             
         #exclude games without a satisfactory recommendation percentage
-        if allowed:
+        """ if allowed:
             cutoff = (223961 / 12500) * math.exp((-11 * game.reviews['total']) / 12500) + 82.1
             allowed = cutoff <= game.reviews['recommended'] """
             

@@ -25,6 +25,8 @@ class SteamGame:
         self.game_id = id
         self.tags = []
         self.content_flags = []
+        self.reviews = []
+        self.ea = []
         
         #if the initializing id was found via API call, the name is already known
         #if it was found in the database, an API call to find the name is required
