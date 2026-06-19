@@ -30,6 +30,8 @@ class SteamUser:
         5: General Mature Content"""
         self.content_filters = [0, 1, 1, 0, 0, 1]
         
+        self.include_ea = 0
+        
         self.get_name()
         self.get_owned_games()
 
@@ -68,9 +70,7 @@ class SteamUser:
             if game.rating != None:
                 print(str(game.tags));
                 for tag in game.tags:
-                    print(tag);
                     scores[tag].append(game.rating)
-                    print(str(scores[tag]));
                 number_of_ratings += 1
         for game_id in self.other_games:
             game = self.other_games[game_id]

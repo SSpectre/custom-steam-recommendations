@@ -19,5 +19,6 @@ CREATE TABLE user_filter_prefs (
 	flag_4_name TEXT,
 	include_flag_4 INTEGER NOT NULL,
 	flag_5_name TEXT,
-	include_flag_5 INTEGER NOT NULL
+	include_flag_5 INTEGER NOT NULL,
+	include_ea INTEGER NOT NULL
 );

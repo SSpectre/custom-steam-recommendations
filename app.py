@@ -1,5 +1,6 @@
 import requests
 import json
+import math
 
 from flask import Flask, redirect, request, url_for, render_template, session, make_response
 from flask_cors import CORS
@@ -61,15 +62,18 @@ def authenticate():
     id_number = identity[last_slash+1:]
     
     session["steam_user"] = SteamUser(id_number)
+    session["logging_in"] = False
     session["list_size"] = DEFAULT_LIST_SIZE
     
     return "<script> close() </script>"
 
 @app.route(URL_ROOT + "confirm/")
 def confirm_login():
-    """In response to an HTTP request from the client, returns the user's Steam ID if one exists or empty JSON if not."""
+    """In response to an HTTP request from the client, returns the user's Steam ID (and a boolean indicating if login is already underway) if one exists or empty JSON if not."""
     try:
-        return json.dumps({"user_id": session["steam_user"].user_id})
+        response = json.dumps({"user_id": session["steam_user"].user_id, "logging_in": session["logging_in"]})
+        session["logging_in"] = True
+        return response
     except (KeyError, AttributeError):
         return {}
 
@@ -87,6 +91,7 @@ def list_owned_games(user_id):
     #if user tries to bypass login by directly entering Steam id, display login screen
     try:
         steam_user = session["steam_user"]
+        session["logging_in"] = False
         owned_games = steam_user.owned_games.values()
     except (KeyError, AttributeError):
         return redirect(url_for("begin"))
@@ -150,6 +155,12 @@ def list_owned_games(user_id):
                                         " WHERE user_id = ?",
                                         [steam_user.user_id], True)[column]
                 steam_user.content_filters[i] = include_flag
+                
+                include_flag = db.query_db("SELECT include_ea" +
+                                        " FROM " + USER_FILTER_PREFS_TABLE +
+                                        " WHERE user_id = ?",
+                                        [steam_user.user_id], True)['include_ea']
+                steam_user.include_ea = include_flag
         else:
             #set content filter preferences to default
             add_filter_prefs()
@@ -164,7 +175,8 @@ def list_owned_games(user_id):
     
     return render_template("owned_games.html", user_name = steam_user.user_name, owned_games = sorted(owned_games, key=lambda game: game.game_name.casefold()),
                            other_games = sorted(steam_user.other_games.values(), key=lambda game: game.game_name.casefold()),
-                           list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters)
+                           list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters,
+                           ea_pref = steam_user.include_ea)
     
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
@@ -202,6 +214,23 @@ def update_filter_pref():
     connection = db.get_db()
     connection.execute("UPDATE " + USER_FILTER_PREFS_TABLE +
                        " SET " + column + """ = ?
+                       WHERE user_id = ?""",
+                       [value, session["steam_user"].user_id])
+    connection.commit()
+    
+    return "{}"
+
+@app.route(URL_ROOT + "update_ea_pref", methods=['POST'])
+def update_ea_pref():
+    """Changes the user's preference for including Early Access games in recommendations."""
+    data = request.get_json()
+    value = data['value']
+    user = session['steam_user']
+    
+    user.include_ea = int(value)
+    connection = db.get_db()
+    connection.execute("UPDATE " + USER_FILTER_PREFS_TABLE +
+                       " SET include_ea = " + """?
                        WHERE user_id = ?""",
                        [value, session["steam_user"].user_id])
     connection.commit()
@@ -268,6 +297,7 @@ def recommend_games():
     
     try:
         steam_user.calculate_tag_scores()
+        print(steam_user.tag_scores)
     except steam_user.NoRatingsError as e:
         response = {"error_message": str(e)}
         return make_response(json.dumps(response), 500)
@@ -318,6 +348,15 @@ def recommend_games():
             if steam_user.content_filters[flag] == 0:
                 allowed = False
                 break
+            
+        #apply early access filter
+        """ if allowed:
+            allowed = not (game.ea and steam_user.include_ea == 0)
+            
+        #exclude games without a satisfactory recommendation percentage
+        if allowed:
+            cutoff = (223961 / 12500) * math.exp((-11 * game.reviews['total']) / 12500) + 82.1
+            allowed = cutoff <= game.reviews['recommended'] """
             
         if allowed:
             #construct recommendation list 
@@ -386,10 +425,10 @@ def add_filter_prefs():
     
     connection = db.get_db()
     connection.execute("INSERT INTO " + USER_FILTER_PREFS_TABLE +
-                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                       " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                        [user.user_id, "Some Nudity or Sexual Content", user.content_filters[1], "Frequent Violence or Gore", user.content_filters[2],
                         "Adult Only Sexual Content", user.content_filters[3], "Frequent Nudity or Sexual Content", user.content_filters[4],
-                        "General Mature Content", user.content_filters[5]])
+                        "General Mature Content", user.content_filters[5], user.include_ea])
     connection.commit()
     
 def add_to_rec_list(game, rec_list):

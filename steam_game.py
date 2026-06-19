@@ -11,6 +11,14 @@ class SteamGame:
     with open('content_flags.json') as flag_file:
         flag_cache = json.load(flag_file)
         
+    reviews_cache = { }
+    with open('reviews.json') as reviews_file:
+        reviews_cache = json.load(reviews_file)
+        
+    ea_cache = { }
+    with open('ea.json') as ea_file:
+        ea_cache = json.load(ea_file)
+        
     TARGET_TAGS = 20
     
     def __init__(self, id, name = None):
@@ -47,6 +55,16 @@ class SteamGame:
         
         try:
             self.content_flags = SteamGame.flag_cache[str(self.game_id)]
+        except KeyError:
+            pass
+        
+        try:
+            self.reviews = SteamGame.reviews_cache[str(self.game_id)]
+        except KeyError:
+            pass
+        
+        try:
+            self.ea = SteamGame.ea_cache[str(self.game_id)]
         except KeyError:
             pass
         
