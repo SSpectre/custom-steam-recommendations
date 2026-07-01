@@ -4,17 +4,12 @@ import time
 import sys
 import datetime
 
+
 class NotGameError(Exception):
     """Exception class for when an app is a DLC, tool, etc."""
     pass
 
-app_ids = []
-game_tag_dict = { }
-tag_set = set()
-content_flag_dict = { }
 name_dict = { }
-reviews_dict = { }
-ea_dict = { }
 
 #for determining overall time taken by the script
 start_time = time.time()
@@ -91,81 +86,17 @@ while end_of_pages == False:
     try:
         print(str(datetime.datetime.now()) + " Page: " + str(page + 1))
         all_json = query_limited_api("https://steamspy.com/api.php?request=all&page=", page, 60)
-        app_ids.extend(list(all_json.keys()))
+        app_ids = all_json.keys()
+        
+        for id in app_ids:
+            name_dict[id] = all_json[id]["name"]
     except AttributeError:
         end_of_pages = True
     page = page + 1
     
-#filter out duplicate IDs that exist for some reason
-id_set = set(app_ids)
-
-request_number = 0
-
-for id in id_set:
-    request_number += 1
-    print(str(datetime.datetime.now()) + " " + str(request_number) + ": " + str(id))
-    
-    try:
-        #filter out non-game software from the set
-        type_json = query_limited_api("https://store.steampowered.com/api/appdetails?appids=", id, 300)
-        type_data = type_json[str(id)]['data']
-        
-        if type_data['type'] == "game":
-            #add game and its tags to cache
-            tag_json = query_limited_api("https://steamspy.com/api.php?request=appdetails&appid=", id, 1)
-            tags = tag_json['tags'].keys()
-            game_tag_dict[id] = list(tags)
-            
-            #add game's tags to the set of all tags
-            tag_set = tag_set | set(tags)
-            
-            #add game and its content flags to cache
-            content_flag_dict[id] = type_data['content_descriptors']['ids']
-            
-            #add game's name to cache
-            name_dict[id] = tag_json['name']
-            
-            #add game's user review info to cache
-            reviews = { }
-            reviews['positive'] = tag_json['positive']
-            reviews['negative'] = tag_json['negative']
-            reviews['total'] = reviews['positive'] + reviews['negative']
-            reviews['recommended'] = 0
-            if reviews['total'] > 0:
-                reviews['recommended'] = round((reviews['positive'] / reviews['total'] * 100), 2)
-            reviews_dict[id] = reviews
-            
-            #add game's early access status to cache
-            if "Early Access" in tag_json['genre']:
-                ea_dict[id] = True
-            else:
-                ea_dict[id] = False
-            
-            print(str(datetime.datetime.now()) + ": " + str(reviews_dict[id]['recommended']) + " (" + str(reviews_dict[id]['total']) + "), " + str(ea_dict[id]) + ", Valid")
-        else:
-            raise NotGameError("Not a game")
-    except (TypeError, KeyError, NotGameError, AttributeError):
-        print("Invalid")
-
-with open('tags.json', 'w') as tags_file:
-    json.dump(game_tag_dict, tags_file)
-    
-with open('tag_set.json', 'w') as set_file:
-    json.dump(list(tag_set), set_file)
-    
-with open('content_flags.json', 'w') as flags_file:
-    json.dump(content_flag_dict, flags_file)
-    
 with open('names.json', 'w') as names_file:
     json.dump(name_dict, names_file)
-    
-with open ('reviews.json', 'w') as reviews_file:
-    json.dump(reviews_dict, reviews_file)
-    
-with open ('ea.json', 'w') as ea_file:
-    json.dump(ea_dict, ea_file)
     
 elapsed_time = time.time() - start_time
     
 print("Time: " + str(elapsed_time))
-print("Valid Games: " + str(len(game_tag_dict.keys())))
