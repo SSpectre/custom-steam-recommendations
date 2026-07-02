@@ -314,29 +314,8 @@ def recommend_games():
     except steam_user.NoRatingsError as e:
         response = {"error_message": str(e)}
         return make_response(json.dumps(response), 500)
-
-    all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&max_results=50000")
-    all_json = all_response.json()
     
-    all_apps = {}
-    try:
-        for app in all_json['response']['apps']:
-            all_apps[str(app['appid'])] = app['name']
-    except KeyError as e:
-        response = {"error_message": str(e)}
-        return make_response(json.dumps(response), 500)
-
-    #API call only returns max 50000 results but gives the location where it stopped, so we continue until all games are found
-    while "have_more_results" in all_json['response']:
-        all_response = requests.get("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=" + secret_keys.STEAM_API_KEY + "&last_appid=" + str(all_json['response']['last_appid']) + "&max_results=50000")
-        all_json = all_response.json()
-        
-        try:
-            for app in all_json['response']['apps']:
-                all_apps[str(app['appid'])] = app['name']
-        except KeyError as e:
-            response = {"error_message": str(e)}
-            return make_response(json.dumps(response), 500)
+    all_apps = SteamGame.name_cache
         
     #filter out possible duplicates
     app_set = set(all_apps.keys())
@@ -354,9 +333,13 @@ def recommend_games():
     #filter out added non-Steam games
     other_set = set(str(key) for key in steam_user.other_games.keys())
     unplayed_games = unplayed_games.difference(other_set)
+    
+    milestones.append(("Query and filter games", time.perf_counter()))
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unplayed_games]
     rec_list = []
+    
+    milestones.append(("Create Game objects", time.perf_counter()))
     
     for game in valid_games:
         #apply mature content filters
@@ -384,6 +367,8 @@ def recommend_games():
     json_list = [rec.to_json() for rec in rec_list]
     for rec in rec_list:
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+        
+    milestones.append(("Calculate game scores", time.perf_counter()))
         
     for i in range(1, len(milestones)):
         print(milestones[i][0] + ": " + str((milestones[i][1] - milestones[0][1]) - (milestones[i-1][1] - milestones[0][1])))
