@@ -30,7 +30,7 @@ class SteamGame:
         self.tags = []
         self.content_flags = []
         self.reviews = []
-        self.ea = []
+        self.ea = False
         self.game_name = ""
         
         #Steam API only supports icon URL, so we grab the logo URL directly

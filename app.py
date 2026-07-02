@@ -89,8 +89,6 @@ def get_user_id():
 @app.route(URL_ROOT + "user/<user_id>/")
 def list_owned_games(user_id):
     """Creates user's library and displays the main page. The user_id parameter is needed for the URL."""
-    
-    milestones = [("Start time", time.perf_counter())]
     #if user tries to bypass login by directly entering Steam id, display login screen
     try:
         steam_user = session["steam_user"]
@@ -99,13 +97,16 @@ def list_owned_games(user_id):
     except (KeyError, AttributeError):
         return redirect(url_for("begin"))
     
-    milestones.append(("Initial setup", time.perf_counter()))
     user_exists = does_user_record_exist(USER_GAMES_TABLE)
     if user_exists:
         game_data = db.query_db("""SELECT game_id, rating, owned
                       FROM """ + USER_GAMES_TABLE +
                       """ WHERE user_id = ?""",
                       [steam_user.user_id])
+        
+        new_owned_games = []
+        owned_games_to_update = []
+        
         #add new games to db and retrieve stored ratings
         for game in owned_games:
             index = None
@@ -122,17 +123,20 @@ def list_owned_games(user_id):
                 #if "owned" is null, it was added to the database prior to the addition of rating unowned games and must be owned
                 #if it is 0, the game was previously played on another platform before being bought on Steam
                 if game_is_owned is None or game_is_owned == 0:
-                    connection = db.get_db()
-                    connection.execute("UPDATE " + USER_GAMES_TABLE +
-                                        """ SET owned = 1
-                                        WHERE user_id = ?
-                                        AND game_id = ?""",
-                                        [steam_user.user_id, game.game_id])
-                    connection.commit()
+                    owned_games_to_update.append(game.game_id)
             else:
-                add_game_to_db(game.game_id, 1)
-                
-        milestones.append(("Query for owned games", time.perf_counter()))
+                new_owned_games.append(game.game_id)
+        
+        to_update = [(game,) for game in owned_games_to_update]
+        connection = db.get_db()
+        connection.executemany("UPDATE " + USER_GAMES_TABLE +
+                               """ SET owned = 1
+                               WHERE user_id = """ + steam_user.user_id +
+                               " AND game_id = ?",
+                               to_update)
+        connection.commit()
+            
+        add_multiple_games_to_db(new_owned_games, 1)
                 
         #non-Steam games can't be found with an API call and require a database query
         other_games = db.query_db("""SELECT game_id, rating
@@ -148,8 +152,6 @@ def list_owned_games(user_id):
             other_game = SteamGame(game_id)
             other_game.rating = rating if rating != "NULL" else None
             steam_user.other_games[game_id] = other_game
-            
-        milestones.append(("Set up other games", time.perf_counter()))
                
         #in case the user doesn't have existing filter preferences
         filters_exist = does_user_record_exist(USER_FILTER_PREFS_TABLE)
@@ -171,20 +173,18 @@ def list_owned_games(user_id):
         else:
             #set content filter preferences to default
             add_filter_prefs()
-            
     else:
         #new user; add all their games to db with no scores
+        to_add = []
         for game in owned_games:
-            add_game_to_db(game.game_id, 1)
+            to_add.append(game.game_id)
+        add_multiple_games_to_db(to_add, 1)
             
         #set content filter preferences to default
         add_filter_prefs()
     
     sorted_owned = sorted(owned_games, key=lambda game: game.game_name.casefold())
     sorted_other = sorted(steam_user.other_games.values(), key=lambda game: game.game_name.casefold())
-    
-    for i in range(1, len(milestones)):
-        print(milestones[i][0] + ": " + str((milestones[i][1] - milestones[0][1]) - (milestones[i-1][1] - milestones[0][1])))
     
     return render_template("owned_games.html", user_name = steam_user.user_name, owned_games = sorted_owned, other_games = sorted_other,
                            list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters,
@@ -305,6 +305,7 @@ def add_other_game():
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
     """Constructs the recommendation list."""
+    milestones = [("Start time", time.perf_counter())]
     steam_user = session["steam_user"]
     
     try:
@@ -383,6 +384,9 @@ def recommend_games():
     json_list = [rec.to_json() for rec in rec_list]
     for rec in rec_list:
         print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+        
+    for i in range(1, len(milestones)):
+        print(milestones[i][0] + ": " + str((milestones[i][1] - milestones[0][1]) - (milestones[i-1][1] - milestones[0][1])))
 
     return json_list
 
@@ -426,6 +430,18 @@ def add_game_to_db(game_id, owned):
     connection.execute("INSERT INTO " + USER_GAMES_TABLE +
                        " VALUES (?, ?, ?, ?)",
                        [session["steam_user"].user_id, game_id, owned, "NULL"])
+    connection.commit()
+    
+def add_multiple_games_to_db(game_ids, owned):
+    """Adds records for multiple games to the database and associates them with the current user"""
+    games = []
+    for id in game_ids:
+        games.append([session["steam_user"].user_id, id, owned, "NULL"])
+    
+    connection = db.get_db()
+    connection.executemany("INSERT INTO " + USER_GAMES_TABLE +
+                       " VALUES (?, ?, ?, ?)",
+                       games)
     connection.commit()
     
 def add_filter_prefs():
