@@ -374,6 +374,10 @@ function logout() {
     }
 }
 
+/** Sends an HTTP request to the server to retrieve an alternate game image if the original fails to load. Sets the new image in the DOM.
+ * @param {number} appID - The game's id number.
+ * @param {HTMLElement} img - The img element whose src failed to load.
+ */
 function getBackupImage(appID, img) {
     let data = {
         appID: appID

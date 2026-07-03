@@ -192,14 +192,18 @@ def list_owned_games(user_id):
     
 @app.route(URL_ROOT + "get_backup_image", methods=['POST'])
 def get_backup_image():
+    """Retrieves an alternate image URL for games whose original image fails to load. Returns a placeholder URL if alternate image also fails."""
     json = request.get_json()
-    id = json['appID']
-    query = 'https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?key=' + secret_keys.STEAM_API_KEY + '&input_json={"ids":[{"appid":"' + str(id) + '"}],"context":{"country_code":"US"},"data_request":{"include_assets":true}}'
+    appID = json['appID']
+    #usually when a capsule image fails to load, it's because it uses a newer system where part of the URL is hashed
+    #need to query API to get hashed URL component
+    query = 'https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?key=' + secret_keys.STEAM_API_KEY + '&input_json={"ids":[{"appid":"' + str(appID) + '"}],"context":{"country_code":"US"},"data_request":{"include_assets":true}}'
     logo_response = requests.get(query)
     result = ""
     if logo_response.status_code == 200:
         logo_json = logo_response.json()
         try:
+            #construct new URL
             url_suffix = logo_json['response']['store_items'][0]['assets']['small_capsule']
             result = "https://shared.steamstatic.com/store_item_assets/steam/apps/" + str(id) + "/" + url_suffix
         except KeyError:
