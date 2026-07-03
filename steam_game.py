@@ -106,3 +106,4 @@ class SteamGame:
             self.rec_score *= (SteamGame.TARGET_TAGS / tag_num)
 
         self.rec_score = round(self.rec_score, 4)
+            

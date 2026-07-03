@@ -190,6 +190,25 @@ def list_owned_games(user_id):
                            list_size = session["list_size"] if "list_size" in session.keys() else DEFAULT_LIST_SIZE, filter_prefs = steam_user.content_filters,
                            ea_pref = steam_user.include_ea)
     
+@app.route(URL_ROOT + "get_backup_image", methods=['POST'])
+def get_backup_image():
+    json = request.get_json()
+    id = json['appID']
+    query = 'https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?key=' + secret_keys.STEAM_API_KEY + '&input_json={"ids":[{"appid":"' + str(id) + '"}],"context":{"country_code":"US"},"data_request":{"include_assets":true}}'
+    logo_response = requests.get(query)
+    result = ""
+    if logo_response.status_code == 200:
+        logo_json = logo_response.json()
+        try:
+            url_suffix = logo_json['response']['store_items'][0]['assets']['small_capsule']
+            result = "https://shared.steamstatic.com/store_item_assets/steam/apps/" + str(id) + "/" + url_suffix
+        except KeyError:
+            result = "https://placehold.co/184x69"
+    else:
+        result = "https://placehold.co/184x69"
+    
+    return result
+    
 @app.route(URL_ROOT + "assign_rating", methods=['POST'])
 def assign_rating():
     """Changes the rating for a specified game in response to an HTTP request from the client."""
@@ -310,7 +329,7 @@ def recommend_games():
     
     try:
         steam_user.calculate_tag_scores()
-        print(steam_user.tag_scores)
+        #print(steam_user.tag_scores)
     except steam_user.NoRatingsError as e:
         response = {"error_message": str(e)}
         return make_response(json.dumps(response), 500)
@@ -365,8 +384,8 @@ def recommend_games():
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
-    for rec in rec_list:
-        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+    #for rec in rec_list:
+        #print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
         
     milestones.append(("Calculate game scores", time.perf_counter()))
         
