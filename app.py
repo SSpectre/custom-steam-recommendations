@@ -205,7 +205,7 @@ def get_backup_image():
         try:
             #construct new URL
             url_suffix = logo_json['response']['store_items'][0]['assets']['small_capsule']
-            result = "https://shared.steamstatic.com/store_item_assets/steam/apps/" + str(id) + "/" + url_suffix
+            result = "https://shared.steamstatic.com/store_item_assets/steam/apps/" + str(appID) + "/" + url_suffix
         except KeyError:
             result = "https://placehold.co/184x69"
     else:
@@ -363,7 +363,7 @@ def recommend_games():
     rec_list = []
     
     milestones.append(("Create Game objects", time.perf_counter()))
-    
+
     for game in valid_games:
         #apply mature content filters
         allowed = True
@@ -388,8 +388,8 @@ def recommend_games():
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
-    #for rec in rec_list:
-        #print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
+    for rec in rec_list:
+        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
         
     milestones.append(("Calculate game scores", time.perf_counter()))
         
