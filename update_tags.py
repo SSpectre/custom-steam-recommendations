@@ -49,7 +49,7 @@ def query_limited_api(url, id, threshold, vital):
             if len(url) > 1:
                 response = requests.get(url[0] + str(id) + url[1], timeout = 60, headers={"Content-Type": "application/json"})
             else:
-                response = requests.get(url + str(id), timeout = 60, headers={"Content-Type": "application/json"})
+                response = requests.get(url[0] + str(id), timeout = 60, headers={"Content-Type": "application/json"})
         except requests.Timeout:
             #don't need to sleep since already waited for timeout
             if should_retry(5, 0): continue
@@ -66,16 +66,14 @@ def query_limited_api(url, id, threshold, vital):
                 else:
                     break
         
+        #this should happen when the end of Steam Spy pages has been reached, so we don't need to check if the query was vital
         if response.status_code == 200:
             try:
                 result = response.json()
             except (json.JSONDecodeError, requests.exceptions.JSONDecodeError):
                 if should_retry(5, 0): continue
                 else:
-                    if vital:
-                        sys.exit(REQUIRED_API_FAILED_MESSAGE)
-                    else:
-                        break
+                    break
         elif response.status_code == 429:
             print(str(datetime.datetime.now()) + " Waiting...")
             global query_start_time
