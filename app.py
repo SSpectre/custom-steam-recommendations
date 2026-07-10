@@ -328,7 +328,6 @@ def add_other_game():
 @app.route(URL_ROOT + "recommend_games")
 def recommend_games():
     """Constructs the recommendation list."""
-    milestones = [("Start time", time.perf_counter())]
     steam_user = session["steam_user"]
     
     try:
@@ -356,13 +355,9 @@ def recommend_games():
     #filter out added non-Steam games
     other_set = set(str(key) for key in steam_user.other_games.keys())
     unplayed_games = unplayed_games.difference(other_set)
-    
-    milestones.append(("Query and filter games", time.perf_counter()))
 
     valid_games = [SteamGame(id, all_apps[id]) for id in unplayed_games]
     recommended_games = []
-    
-    milestones.append(("Create Game objects", time.perf_counter()))
 
     for game in valid_games:
         #apply mature content filters
@@ -379,14 +374,12 @@ def recommend_games():
         #exclude games without a satisfactory user review score vs total user reviews
         if allowed:
             cutoff = (5736913 / 100000) * math.exp((-111 * game.reviews['total']) / 2500) + 82.7
-            #strict version
-            #cutoff = (2821963 / 50000) * math.exp((-23 * game.reviews['total']) / 500) + 83.7
             allowed = cutoff <= game.reviews['recommended']
             
         if allowed:
-            #construct recommendation list 
             game.calculate_rec_score(steam_user.tag_scores)
             
+            #record highest and lowest recommendation scores; the difference is needed for determine cutoff equation
             try:
                 if game.rec_score < lowest_game.rec_score:
                     lowest_game = game
@@ -402,11 +395,14 @@ def recommend_games():
             recommended_games.append(game)
             
     rec_list = []
+    
+    #anchor point for cutoff equation
     x2 = (0.969 * highest_game.rec_score) + (0.031 * lowest_game.rec_score)
     
     for game in recommended_games:
         allowed = True
         
+        #exclude games without a satisfactory user review score vs recommendation score
         cutoff = -(11.3 / (math.exp(0.23 * x2) - math.exp(0.23))) * (math.exp(0.23 * game.rec_score) - math.exp(0.23)) + 95
         allowed = cutoff <= game.reviews['recommended']
         
@@ -415,15 +411,6 @@ def recommend_games():
                 
     #send recommendation list to client as JSON
     json_list = [rec.to_json() for rec in rec_list]
-    for rec in rec_list:
-        print(str(rec_list.index(rec) + 1) + ". " + rec.game_name + ": " + str(rec.rec_score))
-        
-    print("Lowest: " + lowest_game.game_name + " - " + str(lowest_game.rec_score))
-        
-    milestones.append(("Calculate game scores", time.perf_counter()))
-        
-    for i in range(1, len(milestones)):
-        print(milestones[i][0] + ": " + str((milestones[i][1] - milestones[0][1]) - (milestones[i-1][1] - milestones[0][1])))
 
     return json_list
 
