@@ -72,7 +72,7 @@ class SteamGame:
         try:
             self.reviews = SteamGame.reviews_cache[str(self.game_id)]
         except KeyError:
-            pass
+            self.reviews = {"positive": 0, "negative": 0, "total": 0, "recommended": 0}
         
         try:
             self.ea = SteamGame.ea_cache[str(self.game_id)]
