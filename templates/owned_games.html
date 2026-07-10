@@ -12,7 +12,7 @@
 	<body id="csr-body" onpageshow="restrictToIframe()" data-assignrating="{{url_for('assign_rating')}}" data-changelistsize="{{url_for('change_list_size')}}"
 		data-updatefilterpref="{{url_for('update_filter_pref')}}" data-updateeapref="{{url_for('update_ea_pref')}}" data-addothergame="{{url_for('add_other_game')}}"
 		data-recommendgames="{{url_for('recommend_games')}}" data-clearratings="{{url_for('clear_ratings')}}" data-deleteuser="{{url_for('delete_user')}}"
-		data-logout="{{url_for('logout')}}">
+		data-logout="{{url_for('logout')}}" data-getbackupimage="{{url_for('get_backup_image')}}">
 		<p>Logged in as {{user_name}}</p>
 		<div id="csr-buttons">
 			<span id="left-buttons">
@@ -104,7 +104,10 @@
 							<td>
 								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
 									<figure>
-										<img src={{game.game_logo_url}} alt="{{game.game_name}}">
+										<img src="{{game.game_logo_url}}"
+										alt="{{game.game_name}}"
+										onerror="this.onerror=null;
+										getBackupImage({{game.game_id}}, this);">
 										<figcaption>
 												{{game.game_name}}
 										</figcaption>
@@ -171,7 +174,10 @@
 							<td>
 								<a href="#" onclick='window.open("{{game.store_url}}"); return false;'>
 									<figure>
-										<img src={{game.game_logo_url}} alt="{{game.game_name}}">
+										<img src="{{game.game_logo_url}}"
+										alt="{{game.game_name}}"
+										onerror="this.onerror=null;
+										getBackupImage({{game.game_id}}, this);">
 										<figcaption>
 												{{game.game_name}}
 										</figcaption>

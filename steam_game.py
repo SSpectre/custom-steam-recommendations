@@ -11,6 +11,10 @@ class SteamGame:
     with open('content_flags.json') as flag_file:
         flag_cache = json.load(flag_file)
         
+    name_cache = { }
+    with open('names.json') as names_file:
+        name_cache = json.load(names_file)
+        
     reviews_cache = { }
     with open('reviews.json') as reviews_file:
         reviews_cache = json.load(reviews_file)
@@ -26,24 +30,8 @@ class SteamGame:
         self.tags = []
         self.content_flags = []
         self.reviews = []
-        self.ea = []
-        
-        #if the initializing id was found via API call, the name is already known
-        #if it was found in the database, an API call to find the name is required
-        if name is None:
-            response = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(self.game_id))
-            if response.status_code == 200:
-                #Steam Spy API occasionally returns a "too many connections" error with a 200 status
-                #it's out of my control when this happens, but it seems to be temporary
-                try:
-                    response_json = response.json()
-                    self.game_name = response_json['name']
-                except requests.exceptions.JSONDecodeError:
-                    self.game_name = "[Name not found]"
-            else:
-                self.game_name = "[Name not found]"
-        else:
-            self.game_name = name
+        self.ea = False
+        self.game_name = ""
         
         #Steam API only supports icon URL, so we grab the logo URL directly
         self.game_logo_url = "https://cdn.cloudflare.steamstatic.com/steam/apps/" + str(self.game_id) + "/capsule_184x69.jpg"
@@ -59,6 +47,27 @@ class SteamGame:
             self.content_flags = SteamGame.flag_cache[str(self.game_id)]
         except KeyError:
             pass
+        
+        #if the initializing id was found via API call, the name is already known
+        #if it was found in the database, need to check name cache
+        #if not in name cache, check API
+        if name is None:
+            try:
+                self.game_name = SteamGame.name_cache[str(self.game_id)]
+            except KeyError:
+                response = requests.get("https://steamspy.com/api.php?request=appdetails&appid=" + str(self.game_id))
+                if response.status_code == 200:
+                    #Steam Spy API occasionally returns a "too many connections" error with a 200 status
+                    #it's out of my control when this happens, but it seems to be temporary
+                    try:
+                        response_json = response.json()
+                        self.game_name = response_json['name']
+                    except requests.exceptions.JSONDecodeError:
+                        self.game_name = "[Name not found]"
+                else:
+                    self.game_name = "[Name not found]"
+        else:
+            self.game_name = name
         
         try:
             self.reviews = SteamGame.reviews_cache[str(self.game_id)]
@@ -97,3 +106,4 @@ class SteamGame:
             self.rec_score *= (SteamGame.TARGET_TAGS / tag_num)
 
         self.rec_score = round(self.rec_score, 4)
+            

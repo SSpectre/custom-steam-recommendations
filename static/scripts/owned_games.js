@@ -184,7 +184,8 @@ function addOtherGame(appID) {
                 <td>
                     <a href="#" onclick='window.open("` + url + `"); return false;'>
                         <figure>
-                            <img src=` + logo + ` alt="` + name + `}}">
+                            <img src=` + logo + ` alt="` + name + `}}" onerror="this.onerror=null;
+                                getBackupImage(` + id + `, this);">
                             <figcaption>
                                     ` + name + `
                             </figcaption>
@@ -260,6 +261,7 @@ function recommendGames(listSize) {
             for (let i = 0; i < listSize; i++) {
                 let game = JSON.parse(response[i]);
 
+                let id = game.game_id;
                 let url = game.store_url;
                 let logo = game.game_logo_url;
                 let name = game.game_name;
@@ -271,7 +273,8 @@ function recommendGames(listSize) {
                 let innerHTML =
                 `<a href="#" onclick='window.open("${url}");return false;'>
                     <figure>
-                        <img src=${logo} alt="${name}"` + finalLoad + `>
+                        <img src=${logo} alt="${name}"` + finalLoad + `onerror="this.onerror=null;
+                            getBackupImage(` + id + `, this);">
                         <figcaption>
                             ${name}
                         </figcaption>
@@ -371,6 +374,29 @@ function logout() {
     if (confirm("Are you sure you want to log out?")) {
         window.location = $('body').data('logout');
     }
+}
+
+/** Sends an HTTP request to the server to retrieve an alternate game image if the original fails to load. Sets the new image in the DOM.
+ * @param {number} appID - The game's id number.
+ * @param {HTMLElement} img - The img element whose src failed to load.
+ */
+function getBackupImage(appID, img) {
+    let data = {
+        appID: appID
+    };
+
+    $.ajax({
+        type: "POST",
+        url: $('body').data('getbackupimage'),
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(response) {
+            img.src = response;
+        },
+        error: function() {
+            img.src = "https://placehold.co/184x69"
+        },
+    });
 }
 
 /** Switches whether the library or recommendation column is visible when the window is too thin to display both */

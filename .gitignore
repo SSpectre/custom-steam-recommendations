@@ -163,6 +163,7 @@ cython_debug/
 tags.json
 tag_set.json
 content_flags.json
+names.json
 reviews.json
 ea.json
 user_ratings.db
