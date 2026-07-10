@@ -332,7 +332,6 @@ def recommend_games():
     
     try:
         steam_user.calculate_tag_scores()
-        #print(steam_user.tag_scores)
     except steam_user.NoRatingsError as e:
         response = {"error_message": str(e)}
         return make_response(json.dumps(response), 500)
