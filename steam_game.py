@@ -29,7 +29,7 @@ class SteamGame:
         self.game_id = id
         self.tags = []
         self.content_flags = []
-        self.reviews = []
+        self.reviews = { }
         self.ea = False
         self.game_name = ""
         
