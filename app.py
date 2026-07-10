@@ -377,9 +377,11 @@ def recommend_games():
             allowed = not (game.ea and steam_user.include_ea == 0)
             
         #exclude games without a satisfactory recommendation percentage
-        """ if allowed:
-            cutoff = (223961 / 12500) * math.exp((-11 * game.reviews['total']) / 12500) + 82.1
-            allowed = cutoff <= game.reviews['recommended'] """
+        if allowed:
+            #cutoff = (5736913 / 100000) * math.exp((-111 * game.reviews['total']) / 2500) + 82.7
+            #strict version
+            cutoff = (2821963 / 50000) * math.exp((-23 * game.reviews['total']) / 500) + 83.7
+            allowed = cutoff <= game.reviews['recommended']
             
         if allowed:
             #construct recommendation list 
